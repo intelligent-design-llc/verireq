@@ -1,0 +1,123 @@
+# Verification cues for Test, Analysis, Inspection, and Demonstration (TAID).
+# Used by the NASA, DoD, CCSDS, and ISO profiles. Patterns are project
+# heuristics matched against lowercased requirement text. Design-review
+# wording is scored as Analysis, which is how a design record is usually
+# verified when the method set has no separate "review of design" column.
+# Not quoted from NPR 7123.1, the NASA handbook, or any other standard.
+id: taid
+methods:
+  - name: Test
+    short: T
+    cues:
+      - pattern: '\b(?:vibration|shock|thermal[- ]vacuum|tvac|thermal cycling|emc|esd|acoustic|bake-?out)\b'
+        weight: 5
+        cue: environmental test condition
+      - pattern: '\bwithstand|survive\b'
+        weight: 3
+        cue: environmental survival
+      - pattern: '\b(?:transmit|receive|downlink|uplink|telemetry|telecommand|command|data rate|bit rate|ber)\b'
+        weight: 3
+        cue: functional/RF behaviour
+      - pattern: '\b(?:within|in less than|no later than)\s+\d+(?:\.\d+)?\s*(?:ms|s|sec|seconds|min|minutes)\b'
+        weight: 4
+        cue: measurable timing
+      - pattern: '\b(?:shall\s+(?:detect|respond|switch|boot|reboot|reset|deploy|power|enter|recover|execute|store|acquire|measure|regulate|charge|provide|operate|perform|point|maintain))\b'
+        weight: 2
+        cue: observable function
+      - pattern: '\b\d+(?:\.\d+)?\s*(?:w|mw|v|mv|a|ma|hz|khz|mhz|ghz|dbm|dbw|db|kbps|mbps|bps|°c|k|gb|mb)\b'
+        weight: 2
+        cue: measurable physical quantity
+      - pattern: '\b\d+(?:\.\d+)?\s*(?:deg/s|°/s|deg|°|arcsec)(?!\w)'
+        weight: 2
+        cue: measurable angle/rate
+      - pattern: '\b(?:accuracy|stability|ripple|efficiency|output|voltage|current|power consumption)\b'
+        weight: 1
+        cue: performance parameter
+      - pattern: '\bsoftware\b.*\b(?:shall\s+(?:reject|accept|log|report|time-?tag))\b'
+        weight: 2
+        cue: software function
+  - name: Analysis
+    short: A
+    legend: Analysis (incl. similarity and design review)
+    cues:
+      - pattern: '\b(?:lifetime|life time|mission duration|years?\s+in\s+orbit|on-?orbit life)\b'
+        weight: 4
+        cue: lifetime (cannot be fully tested)
+      - pattern: '\b(?:reliability|probability|mtbf|failure rate|fmeca|fmea|single point failure)\b'
+        weight: 5
+        cue: reliability/probability
+      - pattern: '\b(?:radiation|total ionising dose|total ionizing dose|tid|see|seu|latch-?up|krad)\b'
+        weight: 3
+        cue: radiation environment
+      - pattern: '\b(?:de-?orbit|re-?ent(?:er|ry)|debris|detumbl\w*|casualty|25 years|orbital decay|collision)\b'
+        weight: 5
+        cue: orbital/debris analysis
+      - pattern: '\b(?:budget|margin|worst[- ]case|end of life|eol|beginning of life|bol)\b'
+        weight: 3
+        cue: budget/margin/worst case
+      - pattern: '\b(?:coverage|revisit|link budget|eclipse|orbit average)\b'
+        weight: 3
+        cue: mission/orbit analysis
+      - pattern: '\b(?:stiffness|first eigenfrequency|natural frequency|stress|safety factor)\b'
+        weight: 3
+        cue: structural analysis
+      - pattern: '\bsimilarity|heritage|qualified by similarity\b'
+        weight: 3
+        cue: similarity
+      - pattern: '\b(?:shall be designed|design shall|by design|designed to)\b'
+        weight: 5
+        cue: design feature
+      - pattern: '\b(?:comply|compliant|conform|in accordance with|according to|iaw)\b'
+        weight: 4
+        cue: standard compliance
+      - pattern: '\b(?:redundan(?:t|cy)|fail-?safe|fault toleran(?:t|ce)|inhibit|single point)\b'
+        weight: 3
+        cue: architecture property
+      - pattern: '\b(?:shall use|implemented (?:in|using|with)|architecture|modular|interface control|icd)\b'
+        weight: 3
+        cue: design/implementation choice
+      - pattern: '\b(?:coding standard|source code|programming language|software shall be written)\b'
+        weight: 4
+        cue: software design/code
+      - pattern: '\b(?:maintainab|extensib|upgrad|scalab|portab)\w*\b'
+        weight: 3
+        cue: design quality attribute
+      - pattern: '\b(?:shall not use|prohibited|forbidden)\b'
+        weight: 2
+        cue: design prohibition
+  - name: Inspection
+    short: I
+    cues:
+      - pattern: '\b(?:label(?:led|ed)?|marked|marking|identified with|serial number|colou?r)\b'
+        weight: 5
+        cue: physical marking
+      - pattern: '\b(?:dimension|envelope|footprint|length|width|height|volume)\b'
+        weight: 3
+        cue: dimensions
+      - pattern: '\bmass\b|\bweigh'
+        weight: 3
+        cue: mass (measured/weighed)
+      - pattern: '\b(?:connector|fastener|harness|keyed|remove before flight|rbf|access port|test port)\b'
+        weight: 3
+        cue: physical feature
+      - pattern: '\b(?:made of|material|finish|coating|cleanliness|workmanship|solder)\b'
+        weight: 3
+        cue: material/workmanship
+      - pattern: '\b(?:shall be (?:provided with|equipped with|fitted with)|shall have)\b'
+        weight: 2
+        cue: presence of a feature
+      - pattern: '\b(?:delivered|delivery|documentation|data package|user manual|log ?book)\b'
+        weight: 3
+        cue: deliverable item
+  - name: Demonstration
+    short: D
+    cues:
+      - pattern: '\bdemonstrat(?:e|es|ed|ing|ion)\b'
+        weight: 5
+        cue: qualitative demonstration
+      - pattern: '\bshall\s+(?:display|indicate|alert|annunciate|illuminate)\b'
+        weight: 4
+        cue: operator-visible indication
+      - pattern: '\b(?:crew|operator)\b.{0,48}\b(?:procedure|indication|display)\b'
+        weight: 3
+        cue: operator procedure or indication

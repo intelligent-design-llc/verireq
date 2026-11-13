@@ -1,6 +1,6 @@
 # Code of Conduct
 
-We want ECSS Copilot to be a welcoming, professional community for engineers and developers of all backgrounds.
+We want VeriReq to be a welcoming, professional community for engineers and developers of all backgrounds.
 
 **Expected:** be respectful and constructive, assume good intent, focus on the technical issue, and accept feedback gracefully.
 

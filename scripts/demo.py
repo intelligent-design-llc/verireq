@@ -24,7 +24,7 @@ def main():
     DEMO.mkdir(exist_ok=True)
     env = {k: v for k, v in os.environ.items() if not k.startswith("LLM_")}  # demo = rule-based only
     env["PORT"] = str(PORT)
-    srv = subprocess.Popen([sys.executable, "-m", "ecss_copilot"], cwd=ROOT, env=env,
+    srv = subprocess.Popen([sys.executable, "-m", "verireq"], cwd=ROOT, env=env,
                            stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
     try:
         for _ in range(50):
@@ -51,7 +51,7 @@ def main():
                             clip={"x": 0, "y": top, "width": 1440, "height": 1100})
             with page.expect_download() as dl:
                 page.click("#xlsx")
-            dl.value.save_as(str(DEMO / "LARK-1_ecss-copilot-report.xlsx"))
+            dl.value.save_as(str(DEMO / "LARK-1_verireq-report.xlsx"))
             b.close()
         res = httpx.post(URL + "/api/analyze", files={"file": (SAMPLE.name, SAMPLE.read_bytes())}).json()
         (DEMO / "summary.json").write_text(json.dumps(res["summary"], indent=2))

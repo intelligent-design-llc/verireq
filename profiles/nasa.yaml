@@ -1,0 +1,86 @@
+# US civil-space systems-engineering profile. Default.
+# Terminology, reviews, and verification methods follow publicly described
+# NASA practice (shall / should / will, SRR-MDR-PDR-CDR, TAID). All sentences
+# below are paraphrases. No handbook or NPR text is copied.
+schema: 1
+id: nasa
+name: NASA systems engineering
+short_name: NASA
+audience: US civil space
+order: 10
+default: true
+summary: >
+  Default profile for US civil-space systems engineering. shall levies a
+  requirement, should states a goal, and will states a fact or an intention.
+  Verification is drafted as Test, Analysis, Inspection, or Demonstration.
+  Lifecycle labels include SRR, MDR, PDR, and CDR.
+references:
+  - number: NPR 7123.1
+    title: NASA Systems Engineering Processes and Requirements
+  - number: NASA/SP-2016-6105
+    title: NASA Systems Engineering Handbook
+terminology:
+  note: >
+    In this profile, shall levies a binding requirement, should states a
+    non-binding goal, will states a fact or a declaration of intent, and
+    may grants permission. must is not the preferred binding verb; rewrite
+    it as shall. This is a paraphrase of publicly described NASA practice,
+    not a quotation.
+  binding:
+    verbs: [shall]
+    label: requirement
+  goal:
+    verbs: [should]
+    label: goal
+  fact:
+    verbs: [will]
+    label: statement of fact
+  permission:
+    verbs: [may, might, could]
+    label: permission
+  discouraged:
+    verbs: [must]
+    label: non-preferred binding verb
+verification:
+  method_set: taid
+  default_method: Analysis
+  level_hint: "TBD (engineer to assign: element, subsystem, or system)"
+  stage_hint: "TBD (engineer to assign a review such as SRR, MDR, PDR, or CDR)"
+  note: >
+    Draft only. Methods are Test, Analysis, Inspection, and Demonstration.
+    The engineer assigns the method, the level, and the review.
+milestones:
+  - id: MCR
+    name: Mission Concept Review
+  - id: SRR
+    name: System Requirements Review
+  - id: MDR
+    name: Mission Definition Review
+  - id: PDR
+    name: Preliminary Design Review
+  - id: CDR
+    name: Critical Design Review
+  - id: SIR
+    name: System Integration Review
+  - id: TRR
+    name: Test Readiness Review
+  - id: ORR
+    name: Operational Readiness Review
+document_types:
+  - id: srd
+    name: System Requirements Document
+  - id: ird
+    name: Interface Requirements Document
+  - id: conops
+    name: Concept of Operations
+  - id: vpl
+    name: Verification Plan
+identifiers:
+  description: >
+    An element or project prefix, an optional functional area, and a sequence
+    of at least two digits, for example SYS-PWR-010 or SYS-010.
+  example: SYS-PWR-010
+  pattern: '^[A-Z][A-Z0-9]{1,11}(?:-[A-Z0-9]{1,11}){0,4}-\d{2,4}$'
+  enforce: advisory
+rule_set:
+  shared: all

@@ -1,0 +1,118 @@
+# Space-ground interface and mission-operations profile.
+# Flags interface requirements that never name a CCSDS recommendation.
+# Document numbers below are references only. No CCSDS text is included.
+schema: 1
+id: ccsds
+name: CCSDS space-link and operations
+short_name: CCSDS
+audience: Space-ground interfaces
+order: 30
+default: false
+summary: >
+  For requirements that allocate telemetry, telecommand, space packets, the
+  space link, the ground segment, or mission operations. An interface
+  statement that never names a CCSDS recommendation is flagged. Modal verbs
+  follow shall / should / may practice. Verification is drafted with TAID.
+references:
+  - number: CCSDS 131.0-B
+    title: TM Synchronization and Channel Coding
+  - number: CCSDS 132.0-B
+    title: TM Space Data Link Protocol
+  - number: CCSDS 133.0-B
+    title: Space Packet Protocol
+  - number: CCSDS 232.0-B
+    title: TC Space Data Link Protocol
+  - number: CCSDS 520.0-G
+    title: Mission Operations Services Concept
+terminology:
+  note: >
+    In this profile, shall levies a requirement, should is a recommendation,
+    and may is permission. will is a statement of fact, not a requirement.
+    Use this profile for space-to-ground interface and operations statements.
+    Cite the applicable CCSDS book by number; do not copy its text.
+  binding:
+    verbs: [shall]
+    label: requirement
+  goal:
+    verbs: [should]
+    label: recommendation
+  fact:
+    verbs: [will]
+    label: statement of fact
+  permission:
+    verbs: [may, might, could]
+    label: permission
+  possibility:
+    verbs: [can]
+    label: statement of possibility
+  discouraged:
+    verbs: [must]
+    label: non-preferred binding verb
+verification:
+  method_set: taid
+  default_method: Analysis
+  level_hint: "TBD (engineer to assign: onboard, space link, or ground)"
+  stage_hint: "TBD (engineer to assign an interface or operations review)"
+  note: >
+    Draft only. Interface requirements are often closed by test of the
+    link or by analysis of the protocol implementation. The engineer confirms
+    the method.
+milestones:
+  - id: IRR
+    name: Interface Requirements Review
+  - id: SLDR
+    name: Space Link Design Review
+  - id: GSRR
+    name: Ground Segment Readiness Review
+  - id: ORR
+    name: Operational Readiness Review
+  - id: IOCR
+    name: In-Orbit Commissioning Review
+document_types:
+  - id: slis
+    name: Space link interface specification
+  - id: gsr
+    name: Ground segment requirements
+  - id: moc
+    name: Mission operations concept
+  - id: icd
+    name: Interface control document
+identifiers:
+  description: >
+    A link or ground prefix, a function, and a sequence, for example
+    SL-TM-010 or GS-MO-010.
+  example: SL-TM-010
+  pattern: '^[A-Z][A-Z0-9]{1,11}(?:-[A-Z0-9]{1,11}){0,4}-\d{2,4}$'
+  enforce: advisory
+rule_set:
+  shared: all
+extra_rules:
+  - id: STD-CCSDS-01
+    name: Interface function without a cited recommendation
+    severity: Medium
+    summary: >
+      A space-link, packet, or ground-operations function is allocated
+      without naming a CCSDS recommendation.
+    when:
+      any_regex:
+        - '\btelemetr(?:y|ies)\b'
+        - '\btelecommands?\b'
+        - '\bspace packets?\b'
+        - '\bspace link\b'
+        - '\btransfer frames?\b'
+        - '\bground segment\b'
+        - '\bmission operations\b'
+        - '\bchannel coding\b'
+        - '\bspace link extension\b'
+    unless:
+      any_regex:
+        - '\bCCSDS\b'
+    message: >
+      This statement allocates a telemetry, telecommand, packet, space-link,
+      ground-segment, or mission-operations function but does not name a
+      CCSDS recommendation. The interface is hard to verify while the
+      applicable book is left implicit.
+    suggestion: >
+      Name the applicable CCSDS recommendation by number, or state that the
+      interface is project-specific and point to the interface control
+      document. Do not paste recommendation text into the requirement.

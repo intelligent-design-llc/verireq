@@ -1,0 +1,510 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__PRODUCT_NAME__</title>
+<link rel="icon" href="/mark.svg" type="image/svg+xml">
+<style>
+  :root {
+    --bg: #07111e;
+    --bg-2: #0c1c33;
+    --card: rgba(12, 28, 51, 0.92);
+    --line: rgba(120, 186, 255, 0.32);
+    --line-strong: #7ecbff;
+    --ink: #e8f3fc;
+    --muted: #a9c6de;
+    --accent: #3aa7ff;
+    --accent-2: #8fd4ff;
+    --ok: #8ee0b5;
+    --warn: #ffd27a;
+    --bad: #ff9b9b;
+    --chip: rgba(58, 167, 255, 0.12);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    font: 15px/1.5 "Segoe UI", system-ui, sans-serif;
+    color: var(--ink);
+    background:
+      radial-gradient(900px 420px at 110% -10%, rgba(58, 167, 255, 0.22), transparent 55%),
+      radial-gradient(700px 380px at -15% 100%, rgba(20, 70, 140, 0.45), transparent 50%),
+      var(--bg);
+  }
+  a { color: var(--accent-2); }
+  :focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; }
+  .skip { position: absolute; left: -999px; top: 8px; background: #fff; color: #07111e; padding: 6px 10px; z-index: 5; }
+  .skip:focus { left: 12px; }
+  header.top {
+    display: grid; grid-template-columns: auto 1fr; gap: 16px 22px; align-items: center;
+    padding: 22px 28px 8px; max-width: 1240px; margin: 0 auto;
+  }
+  header.top img { width: 56px; height: 56px; }
+  .word { font-size: 40px; font-weight: 720; letter-spacing: 0.01em; margin: 0; line-height: 1; }
+  .word .tail { color: #7ecbff; }
+  .kicker { letter-spacing: 0.22em; text-transform: uppercase; color: var(--accent-2); font-size: 11px; margin: 0 0 4px; }
+  .tagline { margin: 2px 0 0; max-width: 62ch; color: var(--ink); }
+  .tagline em { font-style: italic; color: #f4fbff; }
+  .vendor { color: var(--muted); font-size: 12px; margin: 6px 0 0; }
+  .banner {
+    max-width: 1240px; margin: 8px auto 0; padding: 10px 28px; color: var(--warn);
+    font-size: 13px;
+  }
+  main { max-width: 1240px; margin: 0 auto; padding: 0 28px 64px; }
+  .profiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; margin: 8px 0 14px; }
+  .profile {
+    text-align: left; color: var(--ink); background: transparent; border: 1px solid var(--line);
+    border-radius: 12px; padding: 10px 12px; cursor: pointer; font: inherit;
+  }
+  .profile[aria-checked="true"] { border-color: var(--line-strong); background: rgba(58, 167, 255, 0.14); box-shadow: inset 3px 0 0 var(--accent); }
+  .profile .code { display: block; font-weight: 750; letter-spacing: 0.04em; }
+  .profile .aud { display: block; color: var(--muted); font-size: 12px; font-weight: 500; }
+  .profile .def { color: var(--warn); font-size: 10px; letter-spacing: 0.08em; text-transform: uppercase; }
+  .strip { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 16px; }
+  .chip { border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; font-size: 12px; color: var(--muted); background: var(--chip); }
+  .chip b { color: var(--ink); font-weight: 680; }
+  .tabs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 16px; }
+  .tab {
+    text-align: left; color: var(--ink); background: rgba(8, 20, 38, 0.55); border: 1px solid var(--line);
+    border-radius: 14px; padding: 12px; cursor: pointer; font: inherit; min-height: 84px;
+  }
+  .tab strong { display: block; font-size: 16px; }
+  .tab span { display: block; color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .tab[aria-selected="true"] { border-color: var(--line-strong); }
+  .tab.verify { background: linear-gradient(180deg, rgba(36, 104, 176, 0.45), rgba(8, 24, 46, 0.8)); }
+  .tab.verify[aria-selected="true"] { box-shadow: 0 0 0 1px rgba(143, 212, 255, 0.55), 0 10px 28px rgba(40, 130, 220, 0.22); }
+  .panel { animation: rise 220ms ease; }
+  @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  @media (prefers-reduced-motion: reduce) { .panel { animation: none; } }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 16px 18px; margin-bottom: 14px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  textarea, input[type="text"], input[type="search"], select {
+    width: 100%; background: #081422; color: var(--ink); border: 1px solid var(--line); border-radius: 8px;
+    padding: 8px; font: 13px/1.4 ui-monospace, "Segoe UI", sans-serif;
+  }
+  textarea { min-height: 120px; }
+  button.act, button.ghost {
+    border-radius: 8px; padding: 8px 14px; font-weight: 680; cursor: pointer; font: inherit;
+  }
+  button.act { background: var(--accent); color: #041018; border: 0; }
+  button.ghost { background: transparent; color: var(--accent-2); border: 1px solid var(--line-strong); }
+  button:disabled { opacity: 0.45; cursor: not-allowed; }
+  .row-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+  .muted { color: var(--muted); font-size: 12px; }
+  .err { color: var(--bad); font-weight: 680; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 880px; }
+  select { width: auto; min-width: 9.5rem; max-width: 18rem; }
+  td:first-child, th:first-child { white-space: nowrap; }
+  th { text-align: left; color: var(--accent-2); font-weight: 680; padding: 8px; border-bottom: 1px solid var(--line); position: sticky; top: 0; background: #0d2038; }
+  td { padding: 8px; border-bottom: 1px solid rgba(120, 186, 255, 0.14); vertical-align: top; }
+  .wrap { overflow: auto; max-height: 640px; }
+  .stats { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+  .stat { border: 1px solid var(--line); border-radius: 12px; padding: 10px; background: rgba(8, 20, 38, 0.45); }
+  .stat .n { font-size: 22px; font-weight: 750; }
+  .hero {
+    display: grid; grid-template-columns: 220px 1fr; gap: 18px; align-items: center;
+    background: linear-gradient(100deg, rgba(22, 74, 130, 0.55), rgba(8, 20, 38, 0.2));
+  }
+  .ring {
+    width: 160px; height: 160px; border-radius: 50%; display: grid; place-items: center;
+    background: conic-gradient(var(--ok) calc(var(--p) * 1%), rgba(255,255,255,0.08) 0);
+    margin: 0 auto;
+  }
+  .ring span { width: 112px; height: 112px; border-radius: 50%; background: #071422; display: grid; place-items: center; text-align: center; font-weight: 750; }
+  .methods { display: flex; flex-wrap: wrap; gap: 8px; }
+  .method {
+    min-width: 140px; border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; background: rgba(8, 20, 38, 0.4);
+  }
+  .method b { display: block; font-size: 18px; color: var(--accent-2); }
+  .pill { display: inline-block; border-radius: 999px; padding: 1px 8px; font-size: 11px; font-weight: 700; }
+  .High, .Failed { background: rgba(255, 120, 120, 0.18); color: var(--bad); }
+  .Medium, .Evidence { background: rgba(255, 200, 100, 0.16); color: var(--warn); }
+  .Low, .Open { background: rgba(140, 190, 255, 0.15); color: var(--accent-2); }
+  .Closed { background: rgba(120, 220, 170, 0.16); color: var(--ok); }
+  .Inprogress { background: rgba(140, 190, 255, 0.15); color: var(--accent-2); }
+  .sugg { margin-top: 6px; font-size: 12px; color: var(--muted); }
+  .sugg button { margin: 2px 4px 0 0; }
+  svg.graph { width: 100%; height: 280px; background: #081422; border-radius: 12px; }
+  footer { text-align: center; color: var(--muted); font-size: 12px; padding: 8px 20px 28px; }
+  .hidden { display: none; }
+  @media (max-width: 900px) {
+    .tabs, .stats, .grid-2, .hero, header.top { grid-template-columns: 1fr; }
+    .tabs { grid-template-columns: 1fr 1fr; }
+    header.top, .banner, main { padding-left: 16px; padding-right: 16px; }
+  }
+</style>
+</head>
+<body>
+<a class="skip" href="#modules">Skip to modules</a>
+<header class="top">
+  <img src="/mark.svg" alt="">
+  <div>
+    <p class="kicker">__TAGLINE__</p>
+    <h1 class="word"><span>__WORDMARK_LEAD__</span><span class="tail">__WORDMARK_TAIL__</span></h1>
+    <p class="tagline"><em>__TAGLINE_SECOND__</em></p>
+    <p class="vendor">__VENDOR_LINE__</p>
+  </div>
+</header>
+<p class="banner" role="status" id="banner">
+  Advisory drafts only. With the model pass and the Jira connector left off, requirement text stays in this process.
+  <span id="llmnote"></span>
+</p>
+<main>
+  <section aria-labelledby="profile-label">
+    <h2 id="profile-label" class="kicker">Standard profile</h2>
+    <div class="profiles" id="profiles" role="radiogroup" aria-label="Standard profile"></div>
+    <div class="strip" id="strip"></div>
+  </section>
+  <nav class="tabs" id="modules" role="tablist" aria-label="Modules"></nav>
+  <div id="status" class="muted" role="status"></div>
+
+  <section id="panel-spec" class="panel hidden" role="tabpanel" aria-labelledby="tab-spec">
+    <div class="card grid-2">
+      <div>
+        <b>Import</b>
+        <p class="muted">CSV, Excel, DOCX, PDF text, or ReqIF. Parent and Depends on columns are kept.</p>
+        <input id="file" type="file" accept=".csv,.xlsx,.xlsm,.docx,.pdf,.txt,.md,.reqif,.xml">
+      </div>
+      <div>
+        <label for="paste"><b>Or paste text</b></label>
+        <textarea id="paste" placeholder="SYS-PWR-010 The power subsystem shall ..."></textarea>
+      </div>
+    </div>
+    <div class="card">
+      <div class="row-actions">
+        <button class="act" id="add" type="button">Add requirement</button>
+        <button class="act" id="check" type="button">Check and draft verification</button>
+        <span class="muted" id="libhint">Reuse suggestions come from the local library shipped with the app.</span>
+      </div>
+      <div class="wrap" style="margin-top:12px">
+        <table>
+          <thead><tr><th>ID</th><th>Requirement</th><th>Parent</th><th>Depends on</th><th></th></tr></thead>
+          <tbody id="editor"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="panel-analyze" class="panel hidden" role="tabpanel" aria-labelledby="tab-analyze">
+    <div class="card">
+      <div class="stats" id="astats"></div>
+      <div class="row-actions">
+        <button class="ghost" id="llm" type="button" disabled>Model rewrite (off)</button>
+        <span class="muted" id="profile-used"></span>
+      </div>
+    </div>
+    <div class="card wrap"><table><thead><tr><th>ID</th><th>Findings</th></tr></thead><tbody id="findings"></tbody></table></div>
+  </section>
+
+  <section id="panel-trace" class="panel hidden" role="tabpanel" aria-labelledby="tab-trace">
+    <div class="card">
+      <b>Dependency graph</b>
+      <p class="muted">Solid lines are parent to child. Dashed lines are dependencies.</p>
+      <svg class="graph" id="graph" viewBox="0 0 800 280" role="img" aria-label="Dependency graph"></svg>
+    </div>
+    <div class="card wrap"><table><thead><tr><th>ID</th><th>Link finding</th></tr></thead><tbody id="trace-rows"></tbody></table></div>
+  </section>
+
+  <section id="panel-verify" class="panel" role="tabpanel" aria-labelledby="tab-verify">
+    <div class="card hero">
+      <div class="ring" id="ring" style="--p:0"><span id="ring-label">0%<br>closed</span></div>
+      <div>
+        <p class="kicker">Verify</p>
+        <h2 style="margin:0 0 6px">Method, evidence, and closure</h2>
+        <p class="muted" id="verify-note">Each requirement is drafted to one of the profile's verification methods. It closes only when the status is Passed or Waived and an evidence reference is recorded.</p>
+        <div class="methods" id="method-cards"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="row-actions">
+        <button class="act" id="xlsx" type="button" disabled>Export workbook</button>
+        <button class="ghost" id="reqif" type="button" disabled>Export ReqIF</button>
+        <button class="ghost" id="xray" type="button" disabled>Export Xray JSON</button>
+        <button class="ghost" id="junit" type="button" disabled>Export Xray JUnit</button>
+        <label class="ghost" style="display:inline-block">Import Xray results<input id="xray-in" type="file" accept=".json,.xml" hidden></label>
+        <button class="ghost" id="jira-push" type="button" disabled>Push to Jira</button>
+        <button class="ghost" id="jira-pull" type="button" disabled>Pull Jira status</button>
+      </div>
+      <p class="muted" id="integration-note"></p>
+    </div>
+    <div class="card wrap">
+      <table>
+        <thead><tr><th>ID</th><th>Requirement</th><th>Method</th><th>Status</th><th>Evidence</th><th>Closure</th></tr></thead>
+        <tbody id="verify-rows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="panel-insight" class="panel hidden" role="tabpanel" aria-labelledby="tab-insight">
+    <div class="card"><div class="stats" id="istats"></div></div>
+    <div class="card grid-2">
+      <div><b>Risk hotspots</b><div id="hotspots"></div></div>
+      <div><b>Review attention</b><p class="muted">Two reviewers on the same milestone. A difference in priority or disposition is flagged.</p><div id="attention"></div></div>
+    </div>
+  </section>
+</main>
+<footer id="foot"></footer>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+let PROFILES = [], CONFIG = null, SELECTED = "", STATE = null, ROWS = [];
+
+const CLOSURE = (status, evidence) => {
+  const ev = String(evidence || "").trim();
+  if (status === "Failed") return "Failed";
+  if ((status === "Passed" || status === "Waived") && ev) return "Closed";
+  if (status === "Passed" || status === "Waived") return "Evidence missing";
+  if (status === "Planned" || status === "In progress") return "In progress";
+  return "Open";
+};
+const pillClass = state => state === "In progress" ? "Inprogress" : state === "Evidence missing" ? "Evidence" : state;
+
+async function boot() {
+  const [cfg, prof] = await Promise.all([fetch("/api/config").then(r => r.json()), fetch("/api/profiles").then(r => r.json())]);
+  CONFIG = cfg; PROFILES = prof.profiles; SELECTED = prof.default;
+  $("llmnote").textContent = cfg.llm.enabled
+    ? " Model pass is configured and stays idle until you ask for it."
+    : " Model pass is off.";
+  const jira = cfg.jira.enabled ? `Jira connector is on for project ${cfg.jira.project}.` : "Jira connector is off.";
+  $("integration-note").textContent = jira + " Xray and ReqIF are files on this machine. No vendor account is required for them.";
+  $("llm").disabled = !cfg.llm.enabled;
+  $("llm").textContent = cfg.llm.enabled ? "Model rewrite" : "Model rewrite (off)";
+  renderProfiles(); renderTabs(); renderStrip(); renderVerify();
+}
+function profile() { return PROFILES.find(p => p.id === SELECTED) || PROFILES[0]; }
+function renderProfiles() {
+  $("profiles").innerHTML = PROFILES.map(p => `<button type="button" class="profile" role="radio" aria-checked="${p.id === SELECTED}" data-id="${esc(p.id)}">
+    <span class="code">${esc(p.short_name)}</span><span class="aud">${esc(p.audience)}</span>${p.default ? '<span class="def">Default</span>' : ""}</button>`).join("");
+  $("profiles").querySelectorAll(".profile").forEach(btn => btn.onclick = () => { SELECTED = btn.dataset.id; renderProfiles(); renderStrip(); if (ROWS.length) check(); });
+}
+function renderStrip() {
+  const p = profile(); if (!p) return;
+  const verbs = ["binding", "goal", "fact", "permission", "discouraged", "possibility"].map(g => p.terminology[g] ? `<span class="chip"><b>${esc(p.terminology[g].verbs[0])}</b> ${esc(p.terminology[g].label)}</span>` : "").join("");
+  const methods = (p.verification_methods || []).map(m => `<span class="chip"><b>${esc(m.short)}</b> ${esc(m.name)}</span>`).join("");
+  const miles = (p.milestones || []).map(m => `<span class="chip">${esc(m.id)}</span>`).join("");
+  $("strip").innerHTML = verbs + methods + miles + `<span class="chip">ID e.g. ${esc(p.identifiers.example)}</span>`;
+  $("verify-note").textContent = p.verification_note || $("verify-note").textContent;
+}
+function renderTabs() {
+  const mods = CONFIG.brand.modules;
+  $("modules").innerHTML = mods.map(m => `<button class="tab ${m.id}" id="tab-${m.id}" role="tab" aria-selected="${m.id === "verify"}" aria-controls="panel-${m.id}" type="button"><strong>${esc(m.label)}</strong><span>${esc(m.summary)}</span></button>`).join("");
+  $("modules").querySelectorAll(".tab").forEach(btn => btn.onclick = () => selectTab(btn.id.replace("tab-", "")));
+}
+function selectTab(id) {
+  document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", t.id === "tab-" + id));
+  document.querySelectorAll(".panel").forEach(p => p.classList.toggle("hidden", p.id !== "panel-" + id));
+}
+function blankRow() { return { id: "SYS-NEW-010", text: "", parent_id: "", depends_on: [], verification_status: "Not started", evidence: "", method_override: "", reviews: [], external: {} }; }
+function renderEditor() {
+  $("editor").innerHTML = ROWS.map((r, i) => `<tr>
+    <td><input aria-label="Identifier ${i + 1}" data-f="id" data-i="${i}" value="${esc(r.id)}"></td>
+    <td><textarea aria-label="Requirement ${i + 1}" data-f="text" data-i="${i}">${esc(r.text)}</textarea><div class="sugg" id="sugg-${i}"></div></td>
+    <td><input aria-label="Parent ${i + 1}" data-f="parent_id" data-i="${i}" value="${esc(r.parent_id || "")}"></td>
+    <td><input aria-label="Depends on ${i + 1}" data-f="depends" data-i="${i}" value="${esc((r.depends_on || []).join(", "))}"></td>
+    <td><button class="ghost" type="button" data-del="${i}">Remove</button></td></tr>`).join("");
+  $("editor").querySelectorAll("input, textarea").forEach(el => {
+    el.onchange = () => applyEdit(el);
+    if (el.dataset.f === "text") el.oninput = () => { applyEdit(el); suggest(el); };
+  });
+  $("editor").querySelectorAll("[data-del]").forEach(b => b.onclick = () => { ROWS.splice(+b.dataset.del, 1); renderEditor(); });
+}
+function applyEdit(el) {
+  const row = ROWS[+el.dataset.i]; if (!row) return;
+  if (el.dataset.f === "depends") row.depends_on = el.value.split(/[,;]/).map(s => s.trim()).filter(Boolean);
+  else row[el.dataset.f] = el.value;
+  if (el.dataset.f === "id") row.id_generated = false;
+}
+let suggTimer;
+function suggest(el) {
+  clearTimeout(suggTimer);
+  suggTimer = setTimeout(async () => {
+    const r = await fetch("/api/library?q=" + encodeURIComponent(el.value));
+    const j = await r.json();
+    const box = $("sugg-" + el.dataset.i);
+    if (!box) return;
+    box.innerHTML = (j.suggestions || []).slice(0, 3).map(s => `<button type="button" class="ghost" data-use="${esc(s.text)}">Reuse ${esc(s.id)}</button>`).join("");
+    box.querySelectorAll("button").forEach(b => b.onclick = () => { el.value = b.dataset.use; applyEdit(el); });
+  }, 250);
+}
+async function check() {
+  $("status").textContent = "Checking…";
+  const r = await fetch("/api/analyze", { method: "POST", headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ profile: SELECTED, source: "editor", requirements: ROWS }) });
+  const j = await r.json();
+  if (!r.ok) { $("status").innerHTML = `<span class="err">${esc(j.detail)}</span>`; return; }
+  adopt(j); $("status").textContent = "Checked with " + j.profile.name + ".";
+}
+function adopt(j) {
+  STATE = j;
+  ROWS = j.requirements.map(r => ({...r}));
+  renderEditor(); renderAnalyze(); renderTrace(); renderVerify(); renderInsight();
+  ["xlsx", "reqif", "xray", "junit"].forEach(id => $(id).disabled = false);
+  $("jira-push").disabled = !CONFIG.jira.enabled;
+  $("jira-pull").disabled = !CONFIG.jira.enabled || !ROWS.some(r => r.external && r.external.jira);
+  $("profile-used").textContent = "Profile used: " + j.profile.name + " (" + j.profile.id + ").";
+}
+function renderAnalyze() {
+  if (!STATE) return;
+  const s = STATE.summary;
+  $("astats").innerHTML = [["Requirements", s.requirements], ["Findings", s.findings], ["High", s.by_severity.High], ["Medium", s.by_severity.Medium], ["Low", s.by_severity.Low], ["Avg score", s.average_score]]
+    .map(([l, n]) => `<div class="stat"><div class="n">${esc(n)}</div><div class="muted">${l}</div></div>`).join("");
+  $("findings").innerHTML = STATE.requirements.map(r => `<tr><td>${esc(r.id)}<div class="muted">score ${r.score}</div></td><td>${
+    r.findings.length ? r.findings.map(f => `<div><span class="pill ${esc(f.severity)}">${esc(f.severity)}</span> <b>${esc(f.rule_name)}</b> ${esc(f.message)}</div>`).join("") : '<span class="muted">No quality findings.</span>'
+  }</td></tr>`).join("");
+}
+function renderTrace() {
+  if (!STATE) return;
+  const g = STATE.trace.graph;
+  const nodes = g.nodes.slice(0, 24);
+  const pos = {};
+  nodes.forEach((n, i) => { pos[n.id] = { x: 70 + (i % 8) * 90, y: 50 + Math.floor(i / 8) * 80 }; });
+  const lines = g.edges.filter(e => pos[e.from] && pos[e.to]).map(e => {
+    const a = pos[e.from], b = pos[e.to];
+    return `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${e.kind === "depends" ? "#ffd27a" : "#7ecbff"}" stroke-dasharray="${e.kind === "depends" ? "4 3" : "0"}" stroke-width="1.4"/>`;
+  }).join("");
+  const dots = nodes.map(n => `<g><circle cx="${pos[n.id].x}" cy="${pos[n.id].y}" r="4" fill="#e8f3fc"/><text x="${pos[n.id].x + 6}" y="${pos[n.id].y - 6}" fill="#a9c6de" font-size="10">${esc(n.id)}</text></g>`).join("");
+  $("graph").innerHTML = lines + dots || `<text x="20" y="40" fill="#a9c6de" font-size="13">No links yet. Set a parent or a dependency in Spec.</text>`;
+  const by = {};
+  (STATE.trace.findings || []).forEach(f => { (by[f.req_id] = by[f.req_id] || []).push(f); });
+  $("trace-rows").innerHTML = STATE.requirements.map(r => `<tr><td>${esc(r.id)}</td><td>${(by[r.id] || []).map(f => `<div><span class="pill ${esc(f.severity)}">${esc(f.rule_id)}</span> ${esc(f.message)}</div>`).join("") || '<span class="muted">Linked or standalone.</span>'}</td></tr>`).join("");
+}
+function renderVerify() {
+  const p = (STATE && STATE.profile) || profile();
+  const reqs = STATE ? STATE.requirements : [];
+  const closure = STATE ? STATE.summary.closure : { percent: 0, closed: 0, total: 0, by_state: {} };
+  $("ring").style.setProperty("--p", closure.percent || 0);
+  $("ring-label").innerHTML = `${closure.percent || 0}%<br>closed`;
+  const counts = {};
+  (p.verification_methods || []).forEach(m => counts[m.name] = 0);
+  reqs.forEach(r => { const name = r.method_override || (r.verification && r.verification.primary); if (counts[name] !== undefined) counts[name]++; });
+  $("method-cards").innerHTML = (p.verification_methods || []).map(m => `<div class="method"><b>${esc(m.short)}</b>${esc(m.name)}<div class="muted">${counts[m.name] || 0} drafted</div></div>`).join("");
+  const options = (p.verification_methods || []).map(m => `<option>${esc(m.name)}</option>`).join("");
+  const statuses = ["Not started", "Planned", "In progress", "Passed", "Failed", "Waived"];
+  $("verify-rows").innerHTML = reqs.map((r, i) => {
+    const method = r.method_override || (r.verification && r.verification.primary) || "";
+    const state = r.closure || CLOSURE(r.verification_status, r.evidence);
+    return `<tr><td>${esc(r.id)}</td><td>${esc(r.text)}</td>
+      <td><select aria-label="Method for ${esc(r.id)}" data-v="method" data-i="${i}">${options.replace(`<option>${esc(method)}</option>`, `<option selected>${esc(method)}</option>`)}</select>
+        <div class="muted">${esc((r.verification && r.verification.rationale) || "")}</div></td>
+      <td><select aria-label="Status for ${esc(r.id)}" data-v="status" data-i="${i}">${statuses.map(s => `<option ${s === r.verification_status ? "selected" : ""}>${s}</option>`).join("")}</select></td>
+      <td><input aria-label="Evidence for ${esc(r.id)}" data-v="evidence" data-i="${i}" value="${esc(r.evidence || "")}" placeholder="Report, procedure, or record id"></td>
+      <td><span class="pill ${pillClass(state)}">${esc(state)}</span></td></tr>`;
+  }).join("") || `<tr><td colspan="6">No requirements yet. Import or author them in Spec, then check. The methods above follow the selected profile.</td></tr>`;
+  $("verify-rows").querySelectorAll("select, input").forEach(el => el.onchange = () => {
+    const row = ROWS[+el.dataset.i];
+    if (el.dataset.v === "method") row.method_override = el.value;
+    if (el.dataset.v === "status") row.verification_status = el.value;
+    if (el.dataset.v === "evidence") row.evidence = el.value;
+    row.closure = CLOSURE(row.verification_status, row.evidence);
+    if (STATE) STATE.requirements[+el.dataset.i] = {...row, closure: row.closure};
+    refreshClosure();
+  });
+}
+function refreshClosure() {
+  const counts = { Open: 0, "In progress": 0, "Evidence missing": 0, Failed: 0, Closed: 0 };
+  ROWS.forEach(r => { counts[CLOSURE(r.verification_status, r.evidence)]++; });
+  const total = ROWS.length || 0;
+  const percent = total ? Math.round(1000 * counts.Closed / total) / 10 : 0;
+  if (STATE) STATE.summary.closure = { percent, closed: counts.Closed, total, by_state: counts };
+  $("ring").style.setProperty("--p", percent);
+  $("ring-label").innerHTML = `${percent}%<br>closed`;
+  renderVerify();
+}
+function renderInsight() {
+  if (!STATE) return;
+  const ins = STATE.insight, c = STATE.summary.closure;
+  $("istats").innerHTML = [["Closed", c.closed + "/" + c.total], ["Disagreements", ins.disagreements], ["Trace open", ins.trace_open], ["Unverified", ins.unverified], ["Avg score", STATE.summary.average_score], ["High findings", STATE.summary.by_severity.High]]
+    .map(([l, n]) => `<div class="stat"><div class="n">${esc(n)}</div><div class="muted">${l}</div></div>`).join("");
+  $("hotspots").innerHTML = (ins.hotspots || []).map(h => `<div class="chip"><b>${esc(h.prefix)}</b> avg ${h.average_score} · ${h.high} high</div>`).join("") || '<p class="muted">No hotspot under the current scores.</p>';
+  const miles = ((STATE.profile.milestones) || []).map(m => m.id);
+  $("attention").innerHTML = (ins.attention || []).slice(0, 6).map(a => {
+    const row = STATE.requirements.find(r => r.id === a.id);
+    const rev = (row.reviews || []);
+    const field = (n, key, value) => `<input aria-label="${esc(a.id)} reviewer ${n} ${key}" data-rev="${n}" data-key="${key}" data-id="${esc(a.id)}" value="${esc(value || "")}" placeholder="${key}">`;
+    const r1 = rev[0] || { reviewer: "Reviewer 1", review: miles[0] || "SRR", priority: "", disposition: "" };
+    const r2 = rev[1] || { reviewer: "Reviewer 2", review: miles[0] || "SRR", priority: "", disposition: "" };
+    return `<div class="card"><b>${esc(a.id)}</b> ${a.disagreement ? '<span class="pill High">Disagreement</span>' : ""} <span class="muted">${esc((a.reasons || []).join("; "))}</span>
+      <div class="grid-2"><div>${field(1, "priority", r1.priority)} ${field(1, "disposition", r1.disposition)}</div><div>${field(2, "priority", r2.priority)} ${field(2, "disposition", r2.disposition)}</div></div></div>`;
+  }).join("");
+  $("attention").querySelectorAll("input").forEach(el => el.onchange = () => saveReview(el));
+}
+function saveReview(el) {
+  const row = ROWS.find(r => r.id === el.dataset.id); if (!row) return;
+  row.reviews = row.reviews && row.reviews.length ? row.reviews.slice() : [
+    { reviewer: "Reviewer 1", review: (profile().milestones[0] || {}).id || "SRR", priority: "", disposition: "" },
+    { reviewer: "Reviewer 2", review: (profile().milestones[0] || {}).id || "SRR", priority: "", disposition: "" },
+  ];
+  const idx = +el.dataset.rev - 1;
+  row.reviews[idx] = { ...row.reviews[idx], [el.dataset.key]: el.value };
+  check();
+}
+$("add").onclick = () => { ROWS.push(blankRow()); renderEditor(); selectTab("spec"); };
+$("check").onclick = () => { ROWS.forEach((_, i) => {}); check(); selectTab("verify"); };
+$("file").onchange = async () => {
+  const fd = new FormData(); fd.append("file", $("file").files[0]); fd.append("profile", SELECTED);
+  $("status").textContent = "Importing…";
+  const r = await fetch("/api/analyze", { method: "POST", body: fd });
+  const j = await r.json();
+  if (!r.ok) { $("status").innerHTML = `<span class="err">${esc(j.detail)}</span>`; return; }
+  adopt(j); selectTab("verify"); $("status").textContent = "Imported " + j.summary.requirements + " requirements.";
+};
+$("paste").onchange = () => { /* kept for the check action */ };
+$("check").onclick = async () => {
+  if ($("paste").value.trim() && !ROWS.length) {
+    const r = await fetch("/api/analyze", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ profile: SELECTED, text: $("paste").value }) });
+    const j = await r.json();
+    if (!r.ok) { $("status").innerHTML = `<span class="err">${esc(j.detail)}</span>`; return; }
+    adopt(j); selectTab("verify"); return;
+  }
+  check(); selectTab("verify");
+};
+async function download(url, name) {
+  const r = await fetch(url, { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(STATE) });
+  const blob = await r.blob();
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = name; a.click();
+}
+$("xlsx").onclick = () => download("/api/export", "verireq-report.xlsx");
+$("reqif").onclick = () => download("/api/reqif", "verireq-requirements.reqif");
+$("xray").onclick = () => download("/api/xray/export", "verireq-xray.json");
+$("junit").onclick = () => download("/api/xray/export-junit", "verireq-xray-junit.xml");
+$("xray-in").onchange = async () => {
+  const fd = new FormData(); fd.append("file", $("xray-in").files[0]);
+  const r = await fetch("/api/xray/import", { method: "POST", body: fd });
+  const j = await r.json();
+  if (!r.ok) { $("status").innerHTML = `<span class="err">${esc(j.detail)}</span>`; return; }
+  const by = Object.fromEntries(ROWS.map(row => [row.id, row]));
+  (j.updates || []).forEach(u => { if (by[u.req_id]) { by[u.req_id].verification_status = u.verification_status; if (u.evidence) by[u.req_id].evidence = u.evidence; } });
+  check();
+  $("status").textContent = "Applied " + (j.updates || []).length + " Xray result(s).";
+};
+$("jira-push").onclick = async () => {
+  const r = await fetch("/api/jira/push", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(STATE) });
+  const j = await r.json();
+  if (!r.ok) { $("status").innerHTML = `<span class="err">${esc(j.detail)}</span>`; return; }
+  (j.created || []).forEach(c => { const row = ROWS.find(x => x.id === c.req_id); if (row && c.key) row.external = {...(row.external || {}), jira: c.key}; });
+  $("jira-pull").disabled = false;
+  $("status").textContent = "Pushed " + (j.created || []).length + " issue(s).";
+};
+$("jira-pull").onclick = async () => {
+  const keys = ROWS.map(r => (r.external || {}).jira).filter(Boolean);
+  const r = await fetch("/api/jira/pull", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ keys }) });
+  const j = await r.json();
+  if (!r.ok) { $("status").innerHTML = `<span class="err">${esc(j.detail)}</span>`; return; }
+  const byKey = Object.fromEntries((j.issues || []).map(i => [i.key, i]));
+  ROWS.forEach(row => { const hit = byKey[(row.external || {}).jira]; if (hit) row.verification_status = hit.verification_status; });
+  check();
+};
+$("llm").onclick = async () => {
+  if (!STATE) return;
+  const n = STATE.requirements.filter(r => r.findings.length).length;
+  if (!confirm("Send " + n + " flagged requirement texts to the configured model endpoint?")) return;
+  const r = await fetch("/api/llm", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(STATE) });
+  const j = await r.json();
+  if (!r.ok) { $("status").innerHTML = `<span class="err">${esc(j.detail)}</span>`; return; }
+  adopt(j);
+};
+$("foot").textContent = "Standards are cited by number and title only. Jira, Xray, DOORS, DOORS Next, and Polarion are names of their owners; this tool is not affiliated with or endorsed by them.";
+boot();
+</script>
+</body>
+</html>

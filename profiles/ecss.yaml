@@ -1,0 +1,77 @@
+# Existing ECSS-style profile. Kept so earlier projects and the original
+# rule behaviour remain available. shall is binding. Verification is
+# Test, Analysis, Review of design, and Inspection. No ECSS text is included.
+schema: 1
+id: ecss
+name: ECSS technical requirements
+short_name: ECSS
+audience: European space projects
+order: 50
+default: false
+summary: >
+  European space-project practice previously built into this tool. shall is
+  the binding verb and should is a recommendation. Verification is drafted
+  as Test, Analysis, Review of design, or Inspection.
+references:
+  - number: ECSS-E-ST-10-06
+    title: Space engineering — Technical requirements specification
+  - number: ECSS-E-ST-10-02
+    title: Space engineering — Verification
+terminology:
+  note: >
+    In this profile, shall states a binding requirement, should states a
+    recommendation, may states permission, and will is a non-binding
+    statement of fact or simple future. must is rewritten as shall. This
+    matches the modal handling the tool used before profiles were added.
+    It is a paraphrase, not ECSS text.
+  binding:
+    verbs: [shall]
+    label: requirement
+  goal:
+    verbs: [should]
+    label: recommendation
+  fact:
+    verbs: [will]
+    label: non-binding statement
+  permission:
+    verbs: [may, might, could]
+    label: permission
+  discouraged:
+    verbs: [must]
+    label: non-preferred binding verb
+verification:
+  method_set: tari
+  default_method: Review of design
+  level_hint: "TBD (e.g. unit / subsystem / system)"
+  stage_hint: "TBD (e.g. QM / FM)"
+  note: >
+    Draft only. Methods are Test, Analysis, Review of design, and Inspection.
+    The engineer confirms each mark.
+milestones:
+  - id: SRR
+    name: System Requirements Review
+  - id: PDR
+    name: Preliminary Design Review
+  - id: CDR
+    name: Critical Design Review
+  - id: QR
+    name: Qualification Review
+  - id: AR
+    name: Acceptance Review
+  - id: ORR
+    name: Operational Readiness Review
+document_types:
+  - id: ts
+    name: Technical specification
+  - id: ird
+    name: Interface requirements document
+  - id: vp
+    name: Verification plan
+identifiers:
+  description: >
+    A prefix, an optional area, and a sequence, for example SYS-EPS-010.
+  example: SYS-EPS-010
+  pattern: '^[A-Z][A-Z0-9]{1,11}(?:-[A-Z0-9]{1,11}){0,4}-\d{2,4}$'
+  enforce: advisory
+rule_set:
+  shared: all

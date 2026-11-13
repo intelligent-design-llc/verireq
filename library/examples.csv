@@ -1,0 +1,16 @@
+ID,Requirement,Topic
+LIB-PWR-010,"The power subsystem shall provide a regulated 28 V bus within 0.5 V during eclipse.",power
+LIB-PWR-020,"The power subsystem shall remove non-essential loads within 2 s when the bus voltage falls below 24 V.",power
+LIB-THR-010,"The thermal control subsystem shall keep the battery between 0 °C and 30 °C in operational modes.",thermal
+LIB-COM-010,"The communications subsystem shall transmit health telemetry at 4 kbps.",communications
+LIB-COM-020,"The radio shall provide a link margin of at least 3 dB at 10 deg elevation.",communications
+LIB-SW-010,"The flight software shall enter safe mode within 5 s of a watchdog expiry.",software
+LIB-SW-020,"The flight software shall reject a command whose CRC does not match.",software
+LIB-STR-010,"The structure shall withstand a random vibration of 9.9 grms without structural failure.",structure
+LIB-STR-020,"External connectors shall be labelled with the interface identifier.",structure
+LIB-OPS-010,"The spacecraft shall demonstrate a transition to safe mode when the operator sends the safe-mode command.",operations
+LIB-OPS-020,"The ground segment shall deliver a command acknowledgement within 2 s of uplink.",operations
+LIB-IF-010,"The space link shall transfer telemetry at 2 Mbps using the coding approach identified in CCSDS 131.0-B.",interface
+LIB-DM-010,"The spacecraft shall limit the release of debris during deployment to a probability below 0.1 %, consistent with ISO 24113.",debris
+LIB-NAV-010,"The navigation function shall have a position error no greater than 20 m after 1 h of coast.",navigation
+LIB-REL-010,"The spacecraft shall provide a reliability of at least 90 % over a 2 year on-orbit life.",reliability

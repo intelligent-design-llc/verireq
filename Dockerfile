@@ -9,7 +9,13 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY ecss_copilot ./ecss_copilot
+LABEL org.opencontainers.image.title="VeriReq" \
+      org.opencontainers.image.source="https://github.com/intelligent-design-llc/verireq" \
+      org.opencontainers.image.url="https://verireq.intelligent-design.us"
+
+COPY verireq ./verireq
+COPY profiles ./profiles
+COPY library ./library
 COPY LICENSE NOTICE ./
 
 RUN useradd --create-home --uid 10001 app
@@ -17,4 +23,4 @@ USER app
 
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=3s CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/api/config')" || exit 1
-CMD ["python", "-m", "ecss_copilot"]
+CMD ["python", "-m", "verireq"]

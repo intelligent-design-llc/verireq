@@ -1,0 +1,13 @@
+ID,Requirement
+SYS-PWR-010,The power subsystem shall provide a regulated 28 V bus within 0.5 V during eclipse.
+SYS-PWR-020,The power subsystem should shed loads when the battery state of charge falls below 30 %.
+SYS-ACS-010,The attitude control subsystem will hold the boresight within 0.2 deg during imaging.
+SYS-COM-010,The communications subsystem shall transmit health telemetry at 4 kbps.
+SYS-OPS-010,The spacecraft shall demonstrate a transition to safe mode when the operator sends the command.
+SYS-STR-010,The structure shall withstand a random vibration of 9.9 grms without structural failure.
+SYS-REL-010,The spacecraft shall provide a reliability of at least 90 % over a 2 year on-orbit life.
+SYS-MEC-010,External connectors shall be labelled with the interface identifier.
+SYS-SW-010,The flight software shall comply with the project software design standard.
+SYS-THR-010,The thermal control subsystem shall keep the battery between 0 °C and 30 °C in operational modes.
+SYS-GEN-010,The spacecraft shall be robust and user-friendly.
+SYS-GEN-020,The propulsion subsystem shall provide TBD N of thrust.

@@ -16,18 +16,23 @@ from typing import List
 
 import httpx
 
-METHODS = ["Test", "Analysis", "Inspection", "Review of design"]
+from .profiles import ProfileError, resolve_profile
 
-SYSTEM_PROMPT = """You are a senior space systems engineer reviewing requirements for a project that follows
-ECSS-style requirement-writing practice (one need per requirement, mandatory 'shall', explicit subject,
-measurable and verifiable, no vague terms, no TBD left unflagged, units on all values).
-For each requirement you receive (with the rule-based findings), return:
-- "rewrite": an improved requirement text. Keep the original intent and values. If a value is unknown,
-  keep a clearly marked placeholder like "[TBD: value, unit]" instead of inventing numbers.
-  If the requirement must be split, return the parts separated by " || ".
-- "verification_method": one of Test, Analysis, Inspection, Review of design.
+
+def _prompt(profile) -> str:
+    methods = ", ".join(m["name"] for m in profile.methods)
+    note = (profile.terminology.get("note") or "").strip()
+    return f"""You are a senior space systems engineer reviewing requirements.
+The selected standards profile is {profile.name} ({profile.id}).
+{note}
+Use "{profile.binding_verb}" for binding requirements. Keep the original intent and values.
+If a value is unknown, keep a clearly marked placeholder like "[TBD: value, unit]" instead of inventing numbers.
+If the requirement must be split, return the parts separated by " || ".
+For each requirement return:
+- "rewrite": an improved requirement text.
+- "verification_method": one of {methods}.
 - "rationale": one short sentence explaining the method choice.
-Respond with JSON only: {"items": [{"id": "...", "rewrite": "...", "verification_method": "...", "rationale": "..."}]}"""
+Respond with JSON only: {{"items": [{{"id": "...", "rewrite": "...", "verification_method": "...", "rationale": "..."}}]}}"""
 
 
 def config():
@@ -60,7 +65,14 @@ def refine(result: dict, max_items: int = 60, batch: int = 15) -> dict:
     cfg = config()
     if not cfg["enabled"]:
         raise RuntimeError("LLM not configured (set LLM_BASE_URL and LLM_MODEL, plus LLM_API_KEY if needed).")
-    flagged = [r for r in result["requirements"] if r["findings"]][:max_items]
+    try:
+        profile = resolve_profile((result.get("profile") or {}).get("id"))
+    except ProfileError:
+        profile = resolve_profile(None)
+    methods = profile.method_names()
+    prompt = _prompt(profile)
+    flagged = [r for r in result["requirements"]
+               if any(str(f.get("rule_id", "")).startswith(("RQ", "CON")) for f in r["findings"])][:max_items]
     by_id = {r["id"]: r for r in result["requirements"]}
     errors: List[str] = []
     for i in range(0, len(flagged), batch):
@@ -69,7 +81,7 @@ def refine(result: dict, max_items: int = 60, batch: int = 15) -> dict:
                     "findings": [f"{f['rule_name']}: {f['match']}" for f in r["findings"]],
                     "draft_method": r["verification"]["primary"]} for r in chunk]
         try:
-            content = _post([{"role": "system", "content": SYSTEM_PROMPT},
+            content = _post([{"role": "system", "content": prompt},
                              {"role": "user", "content": json.dumps(payload, ensure_ascii=False)}], cfg)
             for item in _parse(content):
                 row = by_id.get(str(item.get("id")))
@@ -78,7 +90,7 @@ def refine(result: dict, max_items: int = 60, batch: int = 15) -> dict:
                 method = item.get("verification_method")
                 row["llm"] = {
                     "rewrite": item.get("rewrite", ""),
-                    "verification_method": method if method in METHODS else None,
+                    "verification_method": method if method in methods else None,
                     "rationale": item.get("rationale", ""),
                     "model": cfg["model"],
                 }

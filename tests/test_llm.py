@@ -1,8 +1,8 @@
 import json
 
-from ecss_copilot import llm
-from ecss_copilot.core import analyse
-from ecss_copilot.models import Requirement
+from verireq import llm
+from verireq.core import analyse
+from verireq.models import Requirement
 
 
 def test_llm_disabled_without_env(monkeypatch):

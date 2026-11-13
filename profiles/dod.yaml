@@ -1,0 +1,98 @@
+# US defense / Space Force-style profile. Generic MIL-STD specification
+# practice: shall, should, may, and will, plus Inspection / Analysis /
+# Demonstration / Test. Not a Space Force or Department of Defense product,
+# and no MIL-STD text is included.
+schema: 1
+id: dod
+name: DoD / Space Force (MIL-STD style)
+short_name: DoD
+audience: US defense space
+order: 20
+default: false
+summary: >
+  Generic United States defense specification practice for space systems.
+  shall is mandatory, should is a recommendation, may is optional, and will
+  is a declaration of purpose rather than a requirement on the supplier.
+  Verification columns follow Inspection, Analysis, Demonstration, and Test.
+references:
+  - number: MIL-STD-961
+    title: Defense and Program-Unique Specifications Format and Content
+terminology:
+  note: >
+    In this profile, shall states a binding requirement, should states a
+    recommendation, may states an optional permission, and will is a
+    declaration of purpose or a statement of fact, not a requirement levied
+    on the other party. must is rewritten as shall. Review names such as
+    SFR, FCA, and PCA are the usual defense milestones. This is generic
+    practice, not a quotation from MIL-STD-961.
+  binding:
+    verbs: [shall]
+    label: requirement
+  goal:
+    verbs: [should]
+    label: recommendation
+  fact:
+    verbs: [will]
+    label: declaration of purpose
+  permission:
+    verbs: [may, might, could]
+    label: optional permission
+  discouraged:
+    verbs: [must]
+    label: non-preferred binding verb
+verification:
+  method_set: taid
+  method_order: [Inspection, Analysis, Demonstration, Test]
+  default_method: Analysis
+  level_hint: "TBD (engineer to assign: component, subsystem, or system)"
+  stage_hint: "TBD (engineer to assign a review such as SRR, SFR, PDR, or CDR)"
+  note: >
+    Draft only. Column order is Inspection, Analysis, Demonstration, Test,
+    the usual defense verification set. The engineer confirms each mark.
+milestones:
+  - id: SRR
+    name: System Requirements Review
+  - id: SFR
+    name: System Functional Review
+  - id: PDR
+    name: Preliminary Design Review
+  - id: CDR
+    name: Critical Design Review
+  - id: TRR
+    name: Test Readiness Review
+  - id: FCA
+    name: Functional Configuration Audit
+  - id: PCA
+    name: Physical Configuration Audit
+document_types:
+  - id: sss
+    name: System specification
+  - id: irs
+    name: Interface requirements specification
+  - id: srs
+    name: Software requirements specification
+  - id: vpl
+    name: Verification plan
+identifiers:
+  description: >
+    A hierarchical paragraph number such as 3.2.1, or a prefix, optional
+    area, and sequence such as SSS-NAV-010.
+  example: 3.2.1
+  pattern: '^(?:\d+(?:\.\d+){1,6}|[A-Z][A-Z0-9]{1,11}(?:-[A-Z0-9]{1,11}){0,4}-\d{2,4})$'
+  enforce: advisory
+rule_set:
+  shared: all
+extra_rules:
+  - id: STD-DOD-01
+    name: Military standard cited without a number
+    severity: Low
+    summary: A military standard is named without a document number.
+    when:
+      any_regex:
+        - '\bMIL-STD\b(?![\s-]*\d)'
+    message: >
+      A military standard is named without a number, so the verifier cannot
+      tell which document applies.
+    suggestion: >
+      Cite the document by number and title. Do not paste the standard text
+      into the requirement or into this tool.

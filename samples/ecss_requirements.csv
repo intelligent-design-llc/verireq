@@ -1,0 +1,7 @@
+ID,Requirement
+SYS-EPS-010,The EPS shall provide 5 V within 0.1 V.
+SYS-SW-010,The software shall comply with the project coding standard.
+SYS-STR-010,The structure shall be labelled with the serial number.
+SYS-REL-010,The spacecraft shall remain operational for a mission lifetime of 3 years.
+SYS-GEN-010,The system should be easy to operate.
+SYS-GEN-020,The OBC shall be fast and shall log fault events.

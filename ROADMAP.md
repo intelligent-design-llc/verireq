@@ -1,34 +1,41 @@
 # Roadmap
 
-ECSS Copilot is an early prototype. The roadmap is indicative and may change with user feedback.
+VeriReq is an early workbench. The product name may still change. The roadmap is indicative.
 
-## v0.1 (current)
-- Requirement extraction from DOCX, PDF (text layer), CSV, XLSX, TXT and ReqIF (best effort)
-- 15 rule-based requirement-quality checks plus 3 document-level checks, each with a severity and suggested fix
-- Draft verification method per requirement (Test / Analysis / Review of design / Inspection)
-- Optional LLM rewrite pass through any OpenAI-compatible endpoint
-- XLSX export (summary, requirements, findings, verification matrix, rule catalogue)
+The running name is [`verireq/brand.py`](verireq/brand.py). Repository: [github.com/intelligent-design-llc/verireq](https://github.com/intelligent-design-llc/verireq). Site: [verireq.intelligent-design.us](https://verireq.intelligent-design.us).
 
-## v0.2: compliance matrix
+## v0.2 (current)
+
+- Standards profiles, with NASA systems engineering as the default and ECSS kept as one profile
+- Five modules: Spec, Analyze, Trace, Verify, Insight. Verify tracks method, evidence, and closure
+- ReqIF 1.1 import and export for tools such as DOORS, DOORS Next, and Polarion
+- Optional Jira REST connector, off unless configured
+- Xray JSON and JUnit file exchange, with no Xray account
+- Local rule engine that runs with the model pass and Jira connector both off
+
+## v0.3: compliance matrix
+
 - Draft a compliance matrix (C / PC / NC / N/A plus justification) against a chosen standard
-- **Bring your own standard:** the user uploads their own copy of the standard; the project never ships or redistributes standard text
-- Clause-level citations so every compliance statement can be checked by a reviewer
-- Tailoring-matrix support (applicable / tailored / not applicable)
+- **Bring your own standard:** the user uploads their own copy; the project never ships standard text
+- Clause-level citations so a reviewer can check every statement
+- Tailoring support (applicable / tailored / not applicable)
 
-## v0.3: interoperability
-- ReqIF export (round-trip with DOORS, Polarion, Capella and similar tools)
-- Traceability checks: parent/child links, coverage gaps, orphan requirements
-- Diffing between document issues/revisions
+## v0.4: deeper interchange
+
+- Richer ReqIF (enumerations, more attribute types, round-trip of reviewer ballots)
+- Traceability diff between revisions
+- Optional persistence with an explicit delete
 
 ## Deployment and data control
-- Published Docker image for self-hosted / on-premises use (a Dockerfile is already included)
-- Local open-weights model option (e.g. via vLLM or Ollama) so no data leaves the customer network
-- Documented configuration for EU-hosted LLM providers
-- Optional project persistence with explicit deletion
+
+- The image can be built locally (`docker build -t verireq .`). Publishing an image is a separate decision
+- Model endpoint stays the operator's choice, including a model on the same machine
+- Controlled data stays local unless the model pass or the Jira connector is deliberately enabled
 
 ## Quality
-- Larger public evaluation set of synthetic requirements with expected findings
-- False-positive tracking and per-rule enable/disable and severity configuration
-- Additional languages (German, French) for rule vocabularies
 
-Suggestions are welcome; please open an issue.
+- Larger synthetic evaluation set with expected findings per profile
+- Per-rule enablement is already data; severity overrides are not
+- More than two reviewers in one session
+
+Suggestions are welcome; please open an issue. Do not include export-controlled or customer data.
