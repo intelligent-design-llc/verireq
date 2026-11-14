@@ -8,7 +8,6 @@ from __future__ import annotations
 import csv
 import io
 import re
-import xml.etree.ElementTree as ET
 from typing import List, Optional, Tuple
 
 from .models import Requirement
@@ -16,6 +15,7 @@ from .models import Requirement
 # Requirement IDs: letter prefix, at least one separator and a digit group,
 # e.g. SYS-010, PIPIT-EPS-020, REQ_12, R-3.2.1, OBC.SW.004
 ID_RE = re.compile(r"^\s*\[?((?=[A-Z0-9._-]*\d)[A-Z][A-Z0-9]*(?:[-_.][A-Z0-9]+)+)\]?\s*[:.)\-–]?\s+(.*)$")
+NUM_ID_RE = re.compile(r"^\s*(\d+(?:\.\d+){1,6})\s+(.+)$")
 SHALL_RE = re.compile(r"\bshall\b", re.I)
 ID_HEADERS = ("id", "req id", "req. id", "requirement id", "identifier", "ref", "reference", "req #", "no.", "number", "key")
 TEXT_HEADERS = ("requirement", "requirement text", "text", "statement", "description", "req text", "shall statement")
@@ -35,6 +35,16 @@ def _looks_like_heading(line: str) -> bool:
 
 
 MODAL_RE = re.compile(r"\b(?:shall|should|must|will|may)\b", re.I)
+
+
+def _match_id_line(line: str):
+    m = ID_RE.match(line)
+    if m:
+        return m.group(1), m.group(2)
+    m = NUM_ID_RE.match(line)
+    if m:
+        return m.group(1), m.group(2)
+    return None
 
 
 def _is_req_body(body: str) -> bool:
@@ -58,16 +68,16 @@ def requirements_from_text(text: str, source_prefix: str = "line") -> List[Requi
                 reqs.append(Requirement(id=cur_id, text=t, source=cur_src))
         cur_id, cur_text = None, []
 
-    any_ids = any(ID_RE.match(l) for l in lines)
+    any_ids = any(_match_id_line(l) for l in lines)
     if any_ids:
         for i, line in enumerate(lines, 1):
-            m = ID_RE.match(line)
+            matched = _match_id_line(line)
             prev = lines[i - 2].rstrip() if i >= 2 else ""
             dangling = bool(re.search(r"(?:-|\b(?:the|a|an|of|for|and|or|to|with|in|on|by|from|at))$", prev, re.I))
-            body = " ".join([m.group(2)] + [l for l in lines[i:i + 3] if not ID_RE.match(l)]) if m else ""
-            if m and _is_req_body(body) and not dangling:
+            body = " ".join([matched[1]] + [l for l in lines[i:i + 3] if not _match_id_line(l)]) if matched else ""
+            if matched and _is_req_body(body) and not dangling:
                 flush()
-                cur_id, cur_text, cur_src = m.group(1), [m.group(2)], f"{source_prefix} {i}"
+                cur_id, cur_text, cur_src = matched[0], [matched[1]], f"{source_prefix} {i}"
             elif cur_id is not None:
                 if not line.strip() or _looks_like_heading(line):
                     flush()
@@ -84,7 +94,7 @@ def requirements_from_text(text: str, source_prefix: str = "line") -> List[Requi
     for p_i, para in enumerate(paragraphs, 1):
         para = _clean(para.replace("\n", " "))
         for sent in re.split(r"(?<=[.;])\s+(?=[A-Z])", para):
-            if re.search(r"\b(?:shall|should|must)\b", sent, re.I):
+            if re.search(r"\b(?:shall|should|must|will|may)\b", sent, re.I):
                 n += 1
                 reqs.append(Requirement(id=f"AUTO-{n:03d}", text=sent.strip(), source=f"paragraph {p_i}",
                                         id_generated=True))
@@ -102,7 +112,12 @@ def _clean(s: str) -> str:
 
 def _pick_columns(header: List[str], rows: List[List[str]]) -> Tuple[Optional[int], Optional[int]]:
     h = [(_clean(str(c)) if c is not None else "").lower() for c in header]
-    id_col = next((i for i, c in enumerate(h) if c in ID_HEADERS or c.endswith(" id")), None)
+    def _is_id_header(c: str) -> bool:
+        if any(k in c for k in ("parent", "depend", "verif", "status", "evidence", "section", "topic", "method")):
+            return False
+        return c in ID_HEADERS or c.endswith(" id")
+
+    id_col = next((i for i, c in enumerate(h) if _is_id_header(c)), None)
     text_col = next((i for i, c in enumerate(h) if c in TEXT_HEADERS), None)
     if text_col is None:
         text_col = next((i for i, c in enumerate(h) if any(t in c for t in ("requirement", "text", "statement", "description")) and i != id_col), None)
@@ -125,10 +140,19 @@ def _pick_columns(header: List[str], rows: List[List[str]]) -> Tuple[Optional[in
     return id_col, text_col
 
 
+def _header_index(header: List[str], pred) -> Optional[int]:
+    h = [(_clean(str(c)) if c is not None else "").lower() for c in header]
+    return next((i for i, c in enumerate(h) if pred(c)), None)
+
+
 def requirements_from_table(header: List[str], rows: List[List[str]], source_prefix="row") -> List[Requirement]:
     id_col, text_col = _pick_columns(header, rows)
     if text_col is None:
         return []
+    parent_col = _header_index(header, lambda c: "parent" in c)
+    depends_col = _header_index(header, lambda c: "depend" in c)
+    status_col = _header_index(header, lambda c: "status" in c)
+    evidence_col = _header_index(header, lambda c: "evidence" in c)
     reqs = []
     n = 0
     for i, r in enumerate(rows, 2):
@@ -140,7 +164,19 @@ def requirements_from_table(header: List[str], rows: List[List[str]], source_pre
         if not rid:
             n += 1
             rid, gen = f"AUTO-{n:03d}", True
-        reqs.append(Requirement(id=rid, text=text, source=f"{source_prefix} {i}", id_generated=gen))
+
+        def cell(idx):
+            if idx is None or idx >= len(r) or r[idx] is None:
+                return ""
+            return _clean(str(r[idx]))
+
+        depends = [p.strip() for p in re.split(r"[,;]", cell(depends_col)) if p.strip()] if depends_col is not None else []
+        reqs.append(Requirement(
+            id=rid, text=text, source=f"{source_prefix} {i}", id_generated=gen,
+            parent_id=cell(parent_col), depends_on=depends,
+            verification_status=cell(status_col) or "Not started",
+            evidence=cell(evidence_col),
+        ))
     return reqs
 
 
@@ -213,35 +249,36 @@ def from_pdf(data: bytes) -> List[Requirement]:
 
 
 def from_reqif(data: bytes) -> List[Requirement]:
-    """Best-effort ReqIF: takes each SPEC-OBJECT, uses the shortest identifier-like value as ID
-    and the longest string/XHTML value as text."""
-    root = ET.fromstring(data)
-    def local(tag):
-        return tag.rsplit("}", 1)[-1]
-    reqs = []
-    n = 0
-    for obj in root.iter():
-        if local(obj.tag) != "SPEC-OBJECT":
-            continue
-        values = []
-        for av in obj.iter():
-            lt = local(av.tag)
-            if lt == "ATTRIBUTE-VALUE-STRING" and av.get("THE-VALUE"):
-                values.append(av.get("THE-VALUE"))
-            elif lt == "ATTRIBUTE-VALUE-XHTML":
-                values.append(_clean("".join(av.itertext())))
-        values = [v for v in values if v]
-        if not values:
-            continue
-        text = max(values, key=len)
-        ids = [v for v in values if v != text and re.match(r"^[A-Z][A-Z0-9]*(?:[-_.][A-Z0-9]+)+$", v.strip())]
-        rid = ids[0] if ids else (obj.get("LONG-NAME") or obj.get("IDENTIFIER") or "")
-        gen = False
-        if not rid:
-            n += 1
-            rid, gen = f"AUTO-{n:03d}", True
-        reqs.append(Requirement(id=rid, text=_clean(text), source="reqif", id_generated=gen))
-    return reqs
+    """ReqIF 1.x import. Reads requirement text, ids, parent and depends-on relations."""
+    from .reqif import loads
+    try:
+        return loads(data)
+    except ValueError as exc:
+        raise ExtractionError(str(exc)) from exc
+
+
+def requirement_from_mapping(row: dict) -> Requirement:
+    depends = row.get("depends_on") or []
+    if isinstance(depends, str):
+        depends = [p.strip() for p in re.split(r"[,;]", depends) if p.strip()]
+    reviews = row.get("reviews") or []
+    external = row.get("external") or {}
+    llm = row.get("llm") if isinstance(row.get("llm"), dict) else None
+    status = str(row.get("verification_status") or "Not started").strip() or "Not started"
+    return Requirement(
+        id=str(row.get("id") or "").strip() or "AUTO-000",
+        text=_clean(str(row.get("text") or "")),
+        source=str(row.get("source") or ""),
+        id_generated=bool(row.get("id_generated")),
+        parent_id=str(row.get("parent_id") or "").strip(),
+        depends_on=[str(d).strip() for d in depends if str(d).strip()],
+        verification_status=status,
+        method_override=str(row.get("method_override") or "").strip(),
+        evidence=str(row.get("evidence") or "").strip(),
+        reviews=list(reviews) if isinstance(reviews, list) else [],
+        external=dict(external) if isinstance(external, dict) else {},
+        llm=llm,
+    )
 
 
 def extract(filename: str, data: bytes) -> List[Requirement]:

@@ -69,7 +69,7 @@ SECTIONS = [
 ]
 
 INTRO = [
-    "SAMPLE DATA - FICTIONAL MISSION. This document is synthetic and was created to demonstrate ECSS Copilot. "
+    "SAMPLE DATA - FICTIONAL MISSION. This document is synthetic and was created to demonstrate VeriReq. "
     "LARK-1 is not a real spacecraft, and the requirements contain deliberate flaws.",
     "1 Scope: this System Requirements Specification (SRS) defines the system-level requirements for the LARK-1 "
     "3U CubeSat, an Earth-observation technology demonstrator.",
@@ -107,7 +107,7 @@ def main():
     cp = d.core_properties
     cp.author = cp.last_modified_by = "Intelligent Design LLC"
     cp.title = "LARK-1 System Requirements Specification (SAMPLE DATA)"
-    cp.comments = "Synthetic sample data for ECSS Copilot. Fictional mission."
+    cp.comments = "Synthetic sample data for VeriReq. Fictional mission."
     cp.created = cp.modified = datetime(2026, 10, 1, tzinfo=timezone.utc)
     d.save(OUT / "LARK-1_SRS_sample.docx")
     soffice = shutil.which("soffice") or shutil.which("libreoffice")

@@ -15,7 +15,22 @@ import re
 from collections import Counter
 from typing import Callable, Iterable, List
 
+import contextvars
+
 from .models import Finding, Requirement, SEVERITY_PENALTY
+from .profiles import get_rule_catalog, resolve_profile
+
+_PROFILE = contextvars.ContextVar("ecss_profile", default=None)
+
+
+def _profile():
+    current = _PROFILE.get()
+    return current if current is not None else resolve_profile(None)
+
+
+def _rule_name(rule_id: str, fallback: str) -> str:
+    meta = get_rule_catalog().get(rule_id) or {}
+    return meta.get("name") or fallback
 
 # ---------------------------------------------------------------------------
 # Vocabularies
@@ -188,9 +203,11 @@ def _missing_unit_numbers(text: str) -> List[str]:
     return hits
 
 
-def _passive_without_agent(text: str):
-    """Return the fragment if a 'shall be <participle>' construction has no 'by <agent>'."""
-    m = re.search(r"\bshall\s+(?:not\s+)?be\s+(\w+)", text, re.I)
+def _passive_without_agent(text: str, verbs=None):
+    """Return the fragment if a '<binding> be <participle>' construction has no 'by <agent>'."""
+    verbs = list(verbs or _profile().verbs("binding") or ["shall"])
+    alt = "|".join(re.escape(v) for v in verbs)
+    m = re.search(rf"\b(?:{alt})\s+(?:not\s+)?be\s+(\w+)", text, re.I)
     if not m:
         return None
     word = m.group(1).lower()
@@ -228,34 +245,50 @@ def _f(req, rule_id, name, sev, msg, sug, match=""):
                    suggestion=sug, match=match)
 
 
-@rule("RQ-01", "Missing 'shall'")
+@rule("RQ-01", "Missing binding verb")
 def r_missing_shall(req):
-    if _shall_count(req.text) > 0:
+    profile = _profile()
+    verb = profile.binding_verb
+    if profile.count_binding(req.text) > 0:
         return []
-    weak = _find_terms(req.text, ["should", "will", "must", "may", "is to", "are to", "has to", "needs to", "can"])
-    detail = f" It uses '{weak[0]}' instead." if weak else ""
-    return [_f(req, "RQ-01", "Missing 'shall'", "High",
-               "Statement has no mandatory 'shall', so it is not clearly a binding requirement." + detail,
-               "Rewrite as '<The item> shall <verb> <measurable object/condition>'. If it is information, "
-               "a goal or a design description, move it out of the requirement list (or mark it as a goal).",
-               weak[0] if weak else "")]
+    found = profile.first_nonbinding(req.text)
+    if found:
+        word, label = found
+        detail = f" It uses '{word}', which this profile treats as a {label}."
+        suggestion = (
+            f"Rewrite with '{verb}' if the statement is a binding {profile.binding_label}. "
+            f"If '{word}' was intentional, move the sentence out of the requirement list and mark it as a {label}."
+        )
+        match = word
+    else:
+        detail = ""
+        suggestion = (
+            f"Rewrite as '<The item> {verb} <verb> <measurable object and condition>'. "
+            "If the sentence is information, a goal, or a design description, move it out of the requirement list."
+        )
+        match = ""
+    return [_f(req, "RQ-01", _rule_name("RQ-01", "Missing binding verb"), "High",
+               f"Statement has no binding '{verb}', so it is not clearly mandatory." + detail,
+               suggestion, match)]
 
 
-@rule("RQ-02", "Multiple 'shall' in one statement")
+@rule("RQ-02", "Multiple binding verbs in one statement")
 def r_multiple_shall(req):
-    n = _shall_count(req.text)
+    profile = _profile()
+    verb = profile.binding_verb
+    n = profile.count_binding(req.text)
     if n <= 1:
         return []
-    return [_f(req, "RQ-02", "Multiple 'shall' in one statement", "High",
-               f"Statement contains {n} 'shall' clauses; each requirement should state one single need "
+    return [_f(req, "RQ-02", _rule_name("RQ-02", "Multiple binding verbs in one statement"), "High",
+               f"Statement contains {n} '{verb}' clauses; each requirement should state one single need "
                "so that it can be traced and verified on its own.",
                f"Split into {n} separate requirements, each with its own ID (e.g. {req.id}a, {req.id}b).",
-               f"{n}x shall")]
+               f"{n}x {verb}")]
 
 
 @rule("RQ-03", "Vague or subjective term")
 def r_vague(req):
-    terms = _find_terms(req.text, VAGUE_TERMS)
+    terms = _find_terms(req.text, list(VAGUE_TERMS) + _profile().extra_terms("extra_vague_terms"))
     # "about" is common in "rotation about the Z axis"
     if "about" in terms and re.search(r"\babout\s+(?:the\s+)?[xyz][- ]?axis|about\s+its", req.text, re.I):
         terms.remove("about")
@@ -287,7 +320,7 @@ def r_open_item(req):
 
 @rule("RQ-05", "Escape clause")
 def r_escape(req):
-    hits = _find_terms(req.text, ESCAPE_CLAUSES)
+    hits = _find_terms(req.text, list(ESCAPE_CLAUSES) + _profile().extra_terms("extra_escape_clauses"))
     if not hits:
         return []
     return [_f(req, "RQ-05", "Escape clause", "High",
@@ -303,9 +336,11 @@ def r_absolute(req):
     hits = _find_terms(req.text, UNVERIFIABLE_ABSOLUTES)
     if not hits:
         return []
+    methods = [m["name"].lower() for m in _profile().methods]
+    method_phrase = methods[0] if len(methods) == 1 else ", ".join(methods[:-1]) + " or " + methods[-1]
     return [_f(req, "RQ-06", "Unverifiable absolute", "High",
-               f"Absolute wording {', '.join(repr(h) for h in hits)} cannot be demonstrated by a finite "
-               "test, analysis, inspection or review.",
+               f"Absolute wording {', '.join(repr(h) for h in hits)} cannot be closed by a finite "
+               f"{method_phrase}.",
                "Bound the claim: state the specific conditions/environments, the duration and an acceptable "
                "probability or failure rate (e.g. 'over the 2-year mission with reliability >= 0.95').",
                ", ".join(hits))]
@@ -313,30 +348,34 @@ def r_absolute(req):
 
 @rule("RQ-07", "Weak or mixed modal verb")
 def r_weak_modal(req):
-    if _shall_count(req.text) == 0:
+    profile = _profile()
+    if profile.count_binding(req.text) == 0:
         return []  # already covered by RQ-01
-    # ignore "can" inside "shall be capable" etc.; check modals outside the shall clause
-    hits = [h for h in _find_terms(req.text, WEAK_MODALS) if h not in {"can"}]
+    hits = profile.mixed_modals(req.text)
     if not hits:
         return []
-    return [_f(req, "RQ-07", "Weak or mixed modal verb", "Medium",
-               f"Mixes 'shall' with {', '.join(repr(h) for h in hits)}, which blurs what is mandatory.",
-               "Use 'shall' for mandatory content only; move non-binding text (should/may/will) into a "
-               "note, rationale or a separate goal.",
+    verb = profile.binding_verb
+    return [_f(req, "RQ-07", _rule_name("RQ-07", "Weak or mixed modal verb"), "Medium",
+               f"Mixes '{verb}' with {', '.join(repr(h) for h in hits)}, which blurs what is mandatory.",
+               f"Use '{verb}' for mandatory content only. Move non-binding text into a note, a rationale, "
+               "or a separate goal.",
                ", ".join(hits))]
 
 
 @rule("RQ-08", "Passive voice / missing subject")
 def r_passive(req):
+    profile = _profile()
     out = []
     stripped = req.text.strip()
-    if re.match(r"^(?:shall|must|should)\b", stripped, re.I):
+    leading = profile.leading_modals()
+    alt = "|".join(re.escape(v) for v in leading) if leading else "shall"
+    if re.match(rf"^(?:{alt})\b", stripped, re.I):
         out.append(_f(req, "RQ-08", "Passive voice / missing subject", "High",
                       "Statement starts with the modal verb; the responsible item (subject) is missing.",
-                      "Start with the item the requirement applies to: 'The <EPS / OBC / spacecraft> shall ...'.",
+                      f"Start with the item the requirement applies to: 'The <item> {profile.binding_verb} ...'.",
                       stripped.split()[0]))
         return out
-    frag = _passive_without_agent(req.text)
+    frag = _passive_without_agent(req.text, profile.verbs("binding"))
     if frag:
         out.append(_f(req, "RQ-08", "Passive voice / missing subject", "Low",
                       f"Passive construction '{frag}' does not say which item performs the action.",
@@ -386,7 +425,8 @@ def r_open_ended(req):
 
 @rule("RQ-12", "Negative requirement")
 def r_negative(req):
-    if re.search(r"\bshall\s+not\b", req.text, re.I) and not re.search(r"shall\s+not\s+(?:exceed|be\s+(?:less|more|greater|lower|higher))", req.text, re.I):
+    verbs = "|".join(re.escape(v) for v in (_profile().verbs("binding") or ["shall"]))
+    if re.search(rf"\b(?:{verbs})\s+not\b", req.text, re.I) and not re.search(rf"(?:{verbs})\s+not\s+(?:exceed|be\s+(?:less|more|greater|lower|higher))", req.text, re.I):
         return [_f(req, "RQ-12", "Negative requirement", "Low",
                    "Negative statements ('shall not ...') are often hard to verify exhaustively.",
                    "Where possible, state the positive required behaviour and its bounds; keep 'shall not' "
@@ -398,7 +438,7 @@ def r_negative(req):
 @rule("RQ-13", "Statement too long")
 def r_long(req):
     n = len(req.text.split())
-    if n <= 45:
+    if n <= _profile().max_words():
         return []
     return [_f(req, "RQ-13", "Statement too long", "Low",
                f"Statement has {n} words; long requirements tend to bundle several needs and conditions.",
@@ -423,7 +463,8 @@ def r_pronoun(req):
 
 @rule("RQ-15", "Design solution instead of need")
 def r_design(req):
-    m = re.search(r"\b(?:shall\s+(?:use|be\s+implemented\s+(?:using|with|in))|using\s+an?\s+\w+\s+(?:algorithm|processor|microcontroller))\b", req.text, re.I)
+    verbs = "|".join(re.escape(v) for v in (_profile().verbs("binding") or ["shall"]))
+    m = re.search(rf"\b(?:(?:{verbs})\s+(?:use|be\s+implemented\s+(?:using|with|in))|using\s+an?\s+\w+\s+(?:algorithm|processor|microcontroller))\b", req.text, re.I)
     if not m:
         return []
     return [_f(req, "RQ-15", "Design solution instead of need", "Low",
@@ -439,14 +480,16 @@ def r_design(req):
 # ---------------------------------------------------------------------------
 
 
-def document_findings(reqs: List[Requirement]) -> List[Finding]:
+def document_findings(reqs: List[Requirement], profile=None) -> List[Finding]:
+    profile = profile or _profile()
+    example = (profile.identifiers.get("example") or "SYS-PWR-010")
     out: List[Finding] = []
     ids = Counter(r.id for r in reqs)
     for rid, n in ids.items():
         if n > 1:
             for r in reqs:
                 if r.id == rid:
-                    out.append(_f(r, "DOC-01", "Duplicate requirement ID", "High",
+                    out.append(_f(r, "DOC-01", _rule_name("DOC-01", "Duplicate requirement ID"), "High",
                                   f"ID '{rid}' is used {n} times; traceability and verification records will be ambiguous.",
                                   "Give each requirement a unique, stable identifier.", rid))
                     break
@@ -454,16 +497,59 @@ def document_findings(reqs: List[Requirement]) -> List[Finding]:
     for r in reqs:
         key = re.sub(r"\W+", " ", r.text.lower()).strip()
         if key in seen:
-            out.append(_f(r, "DOC-02", "Duplicate requirement text", "Medium",
+            out.append(_f(r, "DOC-02", _rule_name("DOC-02", "Duplicate requirement text"), "Medium",
                           f"Same text as {seen[key]}.",
                           "Delete the duplicate or merge them and keep a single ID.", seen[key]))
         else:
             seen[key] = r.id
     for r in reqs:
         if r.id_generated:
-            out.append(_f(r, "DOC-03", "Missing requirement ID", "Medium",
+            out.append(_f(r, "DOC-03", _rule_name("DOC-03", "Missing requirement ID"), "Medium",
                           "No identifier was found in the source; an ID was generated for this report.",
-                          "Assign a unique, permanent ID in the source document (e.g. SYS-PWR-010).", r.id))
+                          f"Assign a unique, permanent ID in the source document (e.g. {example}).", r.id))
+        else:
+            severity = profile.identifier_violation(r.id)
+            if severity:
+                out.append(_f(
+                    r, "DOC-04", _rule_name("DOC-04", "Identifier outside the profile convention"), severity,
+                    f"Identifier '{r.id}' does not follow this profile's convention: {profile.identifiers.get('description', '').strip()}",
+                    f"Use the form shown by the example {example}, or record why this identifier is exempt.",
+                    r.id,
+                ))
+    return out
+
+
+def _condition_matches(text: str, cond: dict) -> bool:
+    if not cond:
+        return False
+    any_terms = cond.get("any_terms") or []
+    all_terms = cond.get("all_terms") or []
+    regexes = cond.get("any_regex") or []
+    if not any_terms and not all_terms and not regexes:
+        return False
+    if any_terms and not any(_term_present(text, t) for t in any_terms):
+        return False
+    if all_terms and not all(_term_present(text, t) for t in all_terms):
+        return False
+    if regexes and not any(re.search(p, text, re.I) for p in regexes):
+        return False
+    return True
+
+
+def _term_present(text: str, term: str) -> bool:
+    return re.search(r"(?<![\w-])" + re.escape(term) + r"(?![\w-])", text, re.I) is not None
+
+
+def extra_rule_findings(req: Requirement, profile=None) -> List[Finding]:
+    profile = profile or _profile()
+    out = []
+    for rule in profile.extra_rules:
+        if not _condition_matches(req.text, rule.get("when") or {}):
+            continue
+        if rule.get("unless") and _condition_matches(req.text, rule["unless"]):
+            continue
+        out.append(_f(req, rule["id"], rule["name"], rule["severity"], rule["message"].strip(),
+                      rule["suggestion"].strip(), rule["id"]))
     return out
 
 
@@ -472,18 +558,28 @@ def document_findings(reqs: List[Requirement]) -> List[Finding]:
 # ---------------------------------------------------------------------------
 
 
-def check_requirement(req: Requirement) -> List[Finding]:
-    findings: List[Finding] = []
-    for _rid, _name, fn in RULES:
-        findings.extend(fn(req))
-    return findings
+def check_requirement(req: Requirement, profile=None) -> List[Finding]:
+    profile = resolve_profile(profile)
+    token = _PROFILE.set(profile)
+    try:
+        findings: List[Finding] = []
+        enabled = set(profile.enabled_rule_ids([rid for rid, _name, _fn in RULES]))
+        for rid, _name, fn in RULES:
+            if rid not in enabled:
+                continue
+            findings.extend(fn(req))
+        findings.extend(extra_rule_findings(req, profile))
+        return findings
+    finally:
+        _PROFILE.reset(token)
 
 
-def check_all(reqs: List[Requirement]) -> List[Finding]:
+def check_all(reqs: List[Requirement], profile=None) -> List[Finding]:
+    profile = resolve_profile(profile)
     findings: List[Finding] = []
     for r in reqs:
-        findings.extend(check_requirement(r))
-    findings.extend(document_findings(reqs))
+        findings.extend(check_requirement(r, profile))
+    findings.extend(document_findings(reqs, profile))
     return findings
 
 
@@ -492,11 +588,31 @@ def quality_score(findings_for_req: List[Finding]) -> int:
     return max(0, score)
 
 
-def rule_catalogue():
-    cat = [{"rule_id": rid, "name": name, "doc": (fn.__doc__ or "").strip()} for rid, name, fn in RULES]
+def rule_catalogue(profile=None):
+    profile = resolve_profile(profile)
+    catalog = get_rule_catalog()
+    enabled = set(profile.enabled_rule_ids([rid for rid, _name, _fn in RULES]))
+    cat = []
+    for rid, fallback, fn in RULES:
+        if rid not in enabled:
+            continue
+        meta = catalog.get(rid) or {}
+        cat.append({"rule_id": rid, "name": meta.get("name") or fallback, "doc": (meta.get("summary") or fn.__doc__ or "").strip()})
+    for extra in profile.extra_rules:
+        cat.append({"rule_id": extra["id"], "name": extra["name"], "doc": (extra.get("summary") or extra.get("message") or "").strip()})
+    for rid, fallback in (
+        ("DOC-01", "Duplicate requirement ID"),
+        ("DOC-02", "Duplicate requirement text"),
+        ("DOC-03", "Missing requirement ID"),
+        ("DOC-04", "Identifier outside the profile convention"),
+    ):
+        if rid == "DOC-04" and (profile.identifiers.get("enforce") or "off").lower() in {"off", "none"}:
+            continue
+        meta = catalog.get(rid) or {}
+        cat.append({"rule_id": rid, "name": meta.get("name") or fallback, "doc": (meta.get("summary") or "").strip()})
     cat += [
-        {"rule_id": "DOC-01", "name": "Duplicate requirement ID", "doc": ""},
-        {"rule_id": "DOC-02", "name": "Duplicate requirement text", "doc": ""},
-        {"rule_id": "DOC-03", "name": "Missing requirement ID", "doc": ""},
+        {"rule_id": "CON-01", "name": "Near-duplicate statement", "doc": "Two statements share most of their wording."},
+        {"rule_id": "CON-02", "name": "Contradictory bounds", "doc": "A lower bound sits above an upper bound on the same subject."},
+        {"rule_id": "CON-03", "name": "Contradictory obligation", "doc": "One statement requires behaviour another prohibits."},
     ]
     return cat

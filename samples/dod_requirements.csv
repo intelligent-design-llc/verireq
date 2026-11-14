@@ -1,0 +1,10 @@
+ID,Requirement
+3.2.1,The vehicle shall provide a 28 V DC bus regulated to within 1 V.
+3.2.2,The vehicle should remain controllable after a single bus fault.
+3.3.1,The contractor will deliver the interface control drawing before CDR.
+3.4.1,The radio set shall demonstrate acquisition of the uplink.
+3.4.2,Flight connectors shall be keyed so they cannot be mated in the wrong orientation.
+3.5.1,The flight computer must boot within 45 s of power application.
+3.6.1,The unit shall comply with MIL-STD for electromagnetic compatibility.
+3.6.2,The unit shall comply with MIL-STD-461 for electromagnetic compatibility.
+SSS-NAV-010,The navigation function shall have a position error no greater than 20 m after 1 h of coast.

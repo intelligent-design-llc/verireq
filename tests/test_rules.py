@@ -1,7 +1,7 @@
 import pytest
 
-from ecss_copilot.models import Requirement
-from ecss_copilot.rules import check_requirement, check_all, quality_score, _missing_unit_numbers
+from verireq.models import Requirement
+from verireq.rules import check_requirement, check_all, quality_score, _missing_unit_numbers
 
 
 def ids(text, rid="T-001"):

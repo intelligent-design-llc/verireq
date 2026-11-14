@@ -1,0 +1,111 @@
+# International profile using ISO/IEC modal-verb practice and the topic
+# areas of ISO 24113 (debris mitigation) and ISO 14300-1 (programme
+# structure). Generic concepts only. No ISO text is included.
+schema: 1
+id: iso
+name: ISO space systems
+short_name: ISO
+audience: International space
+order: 40
+default: false
+summary: >
+  International profile. shall is a requirement, should a recommendation,
+  may a permission, and can a statement of possibility. Debris, disposal,
+  and passivation statements are flagged when they do not cite ISO 24113.
+  Programme-structure wording stays generic. Verification is drafted with TAID.
+references:
+  - number: ISO 24113
+    title: Space systems — Space debris mitigation requirements
+  - number: ISO 14300-1
+    title: "Space systems — Programme management — Part 1: Structuring of a project"
+terminology:
+  note: >
+    In this profile, shall states a requirement, should a recommendation,
+    may a permission, and can a possibility. must is avoided as a requirement
+    verb and should be rewritten as shall. will is treated as a statement of
+    fact, not a requirement. Debris-mitigation statements should cite the
+    applicable document by number rather than embed its text.
+  binding:
+    verbs: [shall]
+    label: requirement
+  goal:
+    verbs: [should]
+    label: recommendation
+  fact:
+    verbs: [will]
+    label: statement of fact
+  permission:
+    verbs: [may, might, could]
+    label: permission
+  possibility:
+    verbs: [can]
+    label: statement of possibility
+  discouraged:
+    verbs: [must]
+    label: non-preferred binding verb
+verification:
+  method_set: taid
+  default_method: Analysis
+  level_hint: "TBD (engineer to assign: equipment, element, or system)"
+  stage_hint: "TBD (engineer to assign a project review or life-cycle phase)"
+  note: >
+    Draft only. Methods are Test, Analysis, Inspection, and Demonstration.
+    The engineer confirms the method against the project verification plan.
+milestones:
+  - id: CON
+    name: Concept review
+  - id: DEF
+    name: Definition review
+  - id: DES
+    name: Design review
+  - id: QR
+    name: Qualification review
+  - id: ORR
+    name: Operations readiness review
+  - id: DSP
+    name: Disposal review
+document_types:
+  - id: srs
+    name: System requirements specification
+  - id: dmp
+    name: Debris mitigation plan
+  - id: pmp
+    name: Programme management plan
+  - id: irs
+    name: Interface requirements specification
+identifiers:
+  description: >
+    A prefix, an optional area, and a sequence, for example SYS-DM-010.
+  example: SYS-DM-010
+  pattern: '^[A-Z][A-Z0-9]{1,11}(?:-[A-Z0-9]{1,11}){0,4}-\d{2,4}$'
+  enforce: advisory
+rule_set:
+  shared: all
+extra_rules:
+  - id: STD-ISO-01
+    name: Debris topic without a cited mitigation document
+    severity: Medium
+    summary: >
+      A debris, disposal, or passivation statement does not cite ISO 24113.
+    when:
+      any_regex:
+        - '\bdebris\b'
+        - '\bpassivat(?:e|es|ed|ion)\b'
+        - '\bre-?entr(?:y|ies)\b'
+        - '\bre-?enter\b'
+        - '\bcasualty\b'
+        - '\bdisposal orbit\b'
+        - '\bpost-mission disposal\b'
+        - '\bbreak-?up\b'
+        - '\borbital lifetime\b'
+    unless:
+      any_regex:
+        - '\bISO[\s-]*24113\b'
+    message: >
+      This statement covers debris, disposal, re-entry, or passivation but
+      does not cite a debris-mitigation document. A verifier cannot tell
+      which limit applies.
+    suggestion: >
+      Cite the applicable debris-mitigation document by number (ISO 24113
+      when that is the one the project uses) and state the quantified limit
+      in the requirement. Do not paste the standard text.

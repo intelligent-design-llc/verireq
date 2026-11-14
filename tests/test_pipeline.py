@@ -5,18 +5,18 @@ import openpyxl
 import pytest
 from fastapi.testclient import TestClient
 
-from ecss_copilot.app import app
-from ecss_copilot.core import analyse
-from ecss_copilot.export import to_xlsx
-from ecss_copilot.extract import extract, requirements_from_text
-from ecss_copilot.models import Requirement
-from ecss_copilot.verification import draft_verification
+from verireq.app import app
+from verireq.core import analyse
+from verireq.export import to_xlsx
+from verireq.extract import extract, requirements_from_text
+from verireq.models import Requirement
+from verireq.verification import draft_verification
 
 SAMPLES = Path(__file__).resolve().parent.parent / "samples"
 
 
 def method(text):
-    return draft_verification(Requirement("X", text)).primary
+    return draft_verification(Requirement("X", text), "ecss").primary
 
 
 @pytest.mark.parametrize("text,expected", [
@@ -58,7 +58,8 @@ def test_xlsx_export_roundtrip():
     reqs = extract("s.csv", (SAMPLES / "LARK-1_SRS_sample.csv").read_bytes())
     data = to_xlsx(analyse(reqs, "sample"))
     wb = openpyxl.load_workbook(io.BytesIO(data))
-    assert wb.sheetnames == ["Summary", "Requirements", "Findings", "Verification Matrix", "Rules"]
+    assert wb.sheetnames[:4] == ["Summary", "Requirements", "Findings", "Verification Matrix"]
+    assert "Rules" in wb.sheetnames and "Closure" in wb.sheetnames
     assert wb["Requirements"].max_row == len(reqs) + 1
     # the exported requirements sheet can be re-imported
     buf = io.BytesIO(data)

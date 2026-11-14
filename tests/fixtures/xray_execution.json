@@ -1,0 +1,22 @@
+{
+  "info": {
+    "summary": "Fixture execution"
+  },
+  "tests": [
+    {
+      "status": "PASSED",
+      "comment": "Bus test RPT-3",
+      "testInfo": {
+        "requirementKeys": [
+          "SYS-010"
+        ],
+        "summary": "SYS-010 Test"
+      }
+    },
+    {
+      "testKey": "SYS-011",
+      "status": "FAIL",
+      "comment": "Radio did not lock."
+    }
+  ]
+}

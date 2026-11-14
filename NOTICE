@@ -1,12 +1,18 @@
-ECSS Copilot
+VeriReq
 Copyright 2026 Intelligent Design LLC
 
 This product is licensed under the Apache License, Version 2.0 (see LICENSE).
 
-ECSS Copilot is an independent project. It is not affiliated with, endorsed by, or
-sponsored by the European Cooperation for Space Standardization (ECSS), the European
-Space Agency (ESA), or any other agency. "ECSS" is used only to describe the
-standards family that the tool's checks are inspired by. No ECSS standard text is
-included in this distribution.
+VeriReq is an independent project. It is not affiliated with, endorsed by, or
+sponsored by NASA, the Department of Defense, the U.S. Space Force, the
+European Cooperation for Space Standardization (ECSS), the European Space
+Agency (ESA), ISO, CCSDS, Atlassian, IBM, Siemens, or any other body.
+"ECSS", "NASA", "MIL-STD", "ISO", "CCSDS", "Jira", "Xray", "DOORS",
+"DOORS Next", and "Polarion" name the practices or products the checks and
+file formats are written to work beside. No standard text is included.
 
-The sample requirements in samples/ are synthetic and describe a fictional spacecraft.
+The product name is configured in verireq/brand.py.
+Project site: https://copilot.intelligent-design.us
+Source: https://github.com/intelligent-design-llc/verireq
+
+The sample requirements in samples/ and library/ are synthetic.

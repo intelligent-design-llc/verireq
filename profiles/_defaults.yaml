@@ -1,0 +1,28 @@
+# Values filled in when a profile omits them. This file is not a profile.
+# Descriptions anywhere under profiles/ are original paraphrases. Do not paste
+# text from ECSS, ISO, CCSDS, MIL-STD, or other copyrighted standards.
+schema: 1
+parameters:
+  max_words: 45
+rule_set:
+  shared: all
+  disabled: []
+terminology:
+  other_weak:
+    verbs:
+      - can
+      - would
+      - is to
+      - are to
+      - is required to
+      - are required to
+      - has to
+      - have to
+      - needs to
+      - need to
+    label: weak modal
+identifiers:
+  enforce: advisory
+verification:
+  level_hint: "TBD (engineer to assign the verification level)"
+  stage_hint: "TBD (engineer to assign the review or stage)"

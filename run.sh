@@ -6,4 +6,4 @@ if [ ! -x .venv/bin/python ]; then
   python3 -m venv .venv
   .venv/bin/pip install -q -r requirements-dev.txt
 fi
-exec .venv/bin/python -m ecss_copilot
+exec .venv/bin/python -m verireq

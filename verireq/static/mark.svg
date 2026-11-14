@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" role="img" aria-label="VeriReq">
+  <defs>
+    <linearGradient id="vgrad" x1="10" y1="8" x2="62" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f5fbff"/>
+      <stop offset="0.4" stop-color="#8fd4ff"/>
+      <stop offset="1" stop-color="#1c8fff"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="36" cy="36" rx="30" ry="14" transform="rotate(-32 36 36)" fill="none" stroke="#3aa7ff" stroke-width="2.6"/>
+  <path d="M55 16l1.15 3 3.1.35-2.4 2 .8 3.05-2.65-1.6-2.65 1.6.8-3.05-2.4-2 3.1-.35z" fill="#f7fcff"/>
+  <path fill="url(#vgrad)" d="M9 16h13.4L36 47.2 49.6 16H63L41.6 60h-11.2z"/>
+</svg>

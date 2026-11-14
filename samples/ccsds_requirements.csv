@@ -1,0 +1,7 @@
+ID,Requirement
+SL-TM-010,The space link shall transfer telemetry at 2 Mbps using the coding approach identified in CCSDS 131.0-B.
+SL-TC-010,The spacecraft shall accept telecommands from the ground segment.
+GS-MO-010,The ground segment shall deliver space packets to mission operations within 2 s.
+SL-RF-010,The radio shall provide a link margin of at least 3 dB at 10 deg elevation.
+SL-PKT-010,The onboard data handler shall encapsulate payload bytes in space packets as specified by CCSDS 133.0-B.
+GS-GEN-010,The ground software shall be fast and adequate for operators.

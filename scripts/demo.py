@@ -24,7 +24,7 @@ def main():
     DEMO.mkdir(exist_ok=True)
     env = {k: v for k, v in os.environ.items() if not k.startswith("LLM_")}  # demo = rule-based only
     env["PORT"] = str(PORT)
-    srv = subprocess.Popen([sys.executable, "-m", "ecss_copilot"], cwd=ROOT, env=env,
+    srv = subprocess.Popen([sys.executable, "-m", "verireq"], cwd=ROOT, env=env,
                            stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
     try:
         for _ in range(50):
@@ -38,20 +38,16 @@ def main():
             page = b.new_page(viewport={"width": 1440, "height": 1000}, accept_downloads=True)
             page.goto(URL)
             page.set_input_files("#file", str(SAMPLE))
-            page.click("#go")
-            page.wait_for_selector("#rows tr")
+            page.wait_for_selector("#verify-rows tr")
             page.wait_for_timeout(300)
-            page.screenshot(path=str(DEMO / "ui_overview.png"))
-            page.screenshot(path=str(DEMO / "ui_full.png"), full_page=True)
-            page.check("#onlyflag")
-            page.select_option("#sev", "High")
-            page.wait_for_timeout(200)
-            top = page.evaluate("document.querySelector('.filters').getBoundingClientRect().top + window.scrollY - 20")
-            page.screenshot(path=str(DEMO / "ui_high_findings.png"), full_page=True,
-                            clip={"x": 0, "y": top, "width": 1440, "height": 1100})
+            page.screenshot(path=str(DEMO / "ui_overview.png"), full_page=True)
+            page.click("#tab-analyze")
+            page.wait_for_selector("#findings tr")
+            page.screenshot(path=str(DEMO / "ui_high_findings.png"), full_page=True)
+            page.click("#tab-verify")
             with page.expect_download() as dl:
                 page.click("#xlsx")
-            dl.value.save_as(str(DEMO / "LARK-1_ecss-copilot-report.xlsx"))
+            dl.value.save_as(str(DEMO / "LARK-1_verireq-report.xlsx"))
             b.close()
         res = httpx.post(URL + "/api/analyze", files={"file": (SAMPLE.name, SAMPLE.read_bytes())}).json()
         (DEMO / "summary.json").write_text(json.dumps(res["summary"], indent=2))

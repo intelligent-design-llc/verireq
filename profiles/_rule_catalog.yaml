@@ -1,0 +1,59 @@
+# Display names and one-line summaries for the shared checks.
+# Original wording. Not quoted from a standard.
+RQ-01:
+  name: Missing binding verb
+  summary: The statement does not use this profile's binding verb, so it is not clearly mandatory.
+RQ-02:
+  name: Multiple binding verbs in one statement
+  summary: More than one binding clause is packed into a single statement, so the need cannot be traced or verified on its own.
+RQ-03:
+  name: Vague or subjective term
+  summary: A word such as adequate, fast, or robust can be read differently by the author and the verifier.
+RQ-04:
+  name: Open item (TBD/TBC)
+  summary: An unresolved placeholder remains in the statement, so it cannot be baselined or verified yet.
+RQ-05:
+  name: Escape clause
+  summary: A phrase such as "if possible" makes the statement optional in practice.
+RQ-06:
+  name: Unverifiable absolute
+  summary: An absolute claim such as never or always cannot be closed by a finite verification activity.
+RQ-07:
+  name: Weak or mixed modal verb
+  summary: The binding verb is mixed with a verb this profile treats as non-binding, so the obligation is unclear.
+RQ-08:
+  name: Passive voice / missing subject
+  summary: The statement does not say which item the obligation applies to, or who performs the action.
+RQ-09:
+  name: Compound and/or
+  summary: '"and/or", or a slash between words, leaves the combination of conditions undecided.'
+RQ-10:
+  name: Number without unit
+  summary: A numeric value has no recognised unit of measure.
+RQ-11:
+  name: Open-ended list
+  summary: 'Wording such as "etc." or "including but not limited to" leaves the scope open.'
+RQ-12:
+  name: Negative requirement
+  summary: A bare prohibition is often harder to verify than the required behaviour and its bounds.
+RQ-13:
+  name: Statement too long
+  summary: A long statement tends to bundle several needs and conditions.
+RQ-14:
+  name: Ambiguous pronoun reference
+  summary: A pronoun may point at more than one item when the statement is read on its own.
+RQ-15:
+  name: Design solution instead of need
+  summary: The statement prescribes an implementation where the need itself may be what has to be verified.
+DOC-01:
+  name: Duplicate requirement ID
+  summary: The same identifier is used more than once, so traceability is ambiguous.
+DOC-02:
+  name: Duplicate requirement text
+  summary: Two statements have the same text.
+DOC-03:
+  name: Missing requirement ID
+  summary: No identifier was found in the source, so one was generated for this report.
+DOC-04:
+  name: Identifier outside the profile convention
+  summary: The identifier does not follow the pattern this profile expects.
