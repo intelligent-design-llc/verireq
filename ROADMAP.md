@@ -2,7 +2,7 @@
 
 VeriReq is an early workbench. The product name may still change. The roadmap is indicative.
 
-The running name is [`verireq/brand.py`](verireq/brand.py). Repository: [github.com/intelligent-design-llc/verireq](https://github.com/intelligent-design-llc/verireq). Site: [verireq.intelligent-design.us](https://verireq.intelligent-design.us).
+The running name is [`verireq/brand.py`](verireq/brand.py). Repository: [github.com/intelligent-design-llc/verireq](https://github.com/intelligent-design-llc/verireq). Site: [copilot.intelligent-design.us](https://copilot.intelligent-design.us).
 
 ## v0.2 (current)
 

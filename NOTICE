@@ -12,7 +12,7 @@ Agency (ESA), ISO, CCSDS, Atlassian, IBM, Siemens, or any other body.
 file formats are written to work beside. No standard text is included.
 
 The product name is configured in verireq/brand.py.
-Project site: https://verireq.intelligent-design.us
+Project site: https://copilot.intelligent-design.us
 Source: https://github.com/intelligent-design-llc/verireq
 
 The sample requirements in samples/ and library/ are synthetic.

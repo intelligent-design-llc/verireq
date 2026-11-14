@@ -11,7 +11,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 LABEL org.opencontainers.image.title="VeriReq" \
       org.opencontainers.image.source="https://github.com/intelligent-design-llc/verireq" \
-      org.opencontainers.image.url="https://verireq.intelligent-design.us"
+      org.opencontainers.image.url="https://copilot.intelligent-design.us"
 
 COPY verireq ./verireq
 COPY profiles ./profiles

@@ -4,7 +4,7 @@
 
 **Engineering Intelligence.** Intelligence behind every requirement.
 
-A product of Intelligent Design LLC. Product site: [verireq.intelligent-design.us](https://verireq.intelligent-design.us).
+A product of Intelligent Design LLC. Product site: [copilot.intelligent-design.us](https://copilot.intelligent-design.us).
 
 VeriReq is a browser-based workbench for space-project requirements. Verification is the center of the product: each requirement is drafted to a method from the selected standards profile, then tracked until status and evidence close it. Quality checks, trace links, and a review dashboard sit beside that.
 

@@ -23,7 +23,7 @@ def test_brand_module_is_the_source():
     assert TAGLINE == "Engineering Intelligence"
     assert TAGLINE_SECOND == "Intelligence behind every requirement."
     assert PACKAGE_NAME == "verireq"
-    assert SITE_URL == "https://verireq.intelligent-design.us"
+    assert SITE_URL == "https://copilot.intelligent-design.us"
     assert REPO_URL == "https://github.com/intelligent-design-llc/verireq"
     labels = [module_label(m) for m in public_brand()["modules"]]
     assert labels[3] == "VeriReq Verify"

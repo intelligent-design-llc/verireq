@@ -17,7 +17,7 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://verireq.intelligent-design.us"
+Homepage = "https://copilot.intelligent-design.us"
 Repository = "https://github.com/intelligent-design-llc/verireq"
 Issues = "https://github.com/intelligent-design-llc/verireq/issues"
 Changelog = "https://github.com/intelligent-design-llc/verireq/blob/main/CHANGELOG.md"
