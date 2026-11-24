@@ -13,7 +13,7 @@
     --line: rgba(120, 186, 255, 0.32);
     --line-strong: #7ecbff;
     --ink: #e8f3fc;
-    --muted: #a9c6de;
+    --muted: #c5d8ea;
     --accent: #3aa7ff;
     --accent-2: #8fd4ff;
     --ok: #8ee0b5;
@@ -50,7 +50,7 @@
     max-width: 1240px; margin: 8px auto 0; padding: 10px 28px; color: var(--warn);
     font-size: 13px;
   }
-  main { max-width: 1240px; margin: 0 auto; padding: 0 28px 64px; }
+  main { max-width: 1200px; margin: 0 auto; padding: 0 clamp(16px, 2.5vw, 28px) 72px; }
   .profiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px; margin: 8px 0 14px; }
   .profile {
     text-align: left; color: var(--ink); background: transparent; border: 1px solid var(--line);
@@ -63,7 +63,7 @@
   .strip { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 16px; }
   .chip { border: 1px solid var(--line); border-radius: 999px; padding: 2px 10px; font-size: 12px; color: var(--muted); background: var(--chip); }
   .chip b { color: var(--ink); font-weight: 680; }
-  .tabs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 16px; }
+  .tabs { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-bottom: 16px; }
   .tab {
     text-align: left; color: var(--ink); background: rgba(8, 20, 38, 0.55); border: 1px solid var(--line);
     border-radius: 14px; padding: 12px; cursor: pointer; font: inherit; min-height: 84px;
@@ -124,11 +124,15 @@
   .Inprogress { background: rgba(140, 190, 255, 0.15); color: var(--accent-2); }
   .sugg { margin-top: 6px; font-size: 12px; color: var(--muted); }
   .sugg button { margin: 2px 4px 0 0; }
-  svg.graph { width: 100%; height: 280px; background: #081422; border-radius: 12px; }
+  svg.graph { width: 100%; height: auto; min-height: 180px; background: #081422; border-radius: 12px; }
   footer { text-align: center; color: var(--muted); font-size: 12px; padding: 8px 20px 28px; }
   .hidden { display: none; }
+  @media (max-width: 1100px) {
+    .tabs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .hero { grid-template-columns: 1fr; }
+  }
   @media (max-width: 900px) {
-    .tabs, .stats, .grid-2, .hero, header.top { grid-template-columns: 1fr; }
+    .tabs, .stats, .grid-2, header.top { grid-template-columns: 1fr; }
     .tabs { grid-template-columns: 1fr 1fr; }
     header.top, .banner, main { padding-left: 16px; padding-right: 16px; }
   }
@@ -154,9 +158,13 @@
     <h2 id="profile-label" class="kicker">Standard profile</h2>
     <div class="profiles" id="profiles" role="radiogroup" aria-label="Standard profile"></div>
     <div class="strip" id="strip"></div>
+    <div class="row-actions">
+      <button class="act" id="load-demo" type="button">Load demo project</button>
+      <span class="muted">DemoSat is a fictional small-satellite set stored in this app. Nothing is uploaded and nothing leaves this process.</span>
+    </div>
   </section>
   <nav class="tabs" id="modules" role="tablist" aria-label="Modules"></nav>
-  <div id="status" class="muted" role="status"></div>
+  <div id="status" class="muted" role="status" aria-live="polite"></div>
 
   <section id="panel-spec" class="panel hidden" role="tabpanel" aria-labelledby="tab-spec">
     <div class="card grid-2">
@@ -193,14 +201,14 @@
         <span class="muted" id="profile-used"></span>
       </div>
     </div>
-    <div class="card wrap"><table><thead><tr><th>ID</th><th>Findings</th></tr></thead><tbody id="findings"></tbody></table></div>
+    <div class="card wrap"><table><thead><tr><th>ID</th><th>Findings</th></tr></thead><tbody id="findings"><tr><td colspan="2">No project loaded. Load the demo project, or import a file in Spec.</td></tr></tbody></table></div>
   </section>
 
   <section id="panel-trace" class="panel hidden" role="tabpanel" aria-labelledby="tab-trace">
     <div class="card">
       <b>Dependency graph</b>
       <p class="muted">Solid lines are parent to child. Dashed lines are dependencies.</p>
-      <svg class="graph" id="graph" viewBox="0 0 800 280" role="img" aria-label="Dependency graph"></svg>
+      <svg class="graph" id="graph" viewBox="0 0 800 280" role="img" aria-label="Dependency graph"><text x="24" y="40" fill="#c5d8ea" font-size="13">No links yet. Load the demo project to see a parent tree.</text></svg>
     </div>
     <div class="card wrap"><table><thead><tr><th>ID</th><th>Link finding</th></tr></thead><tbody id="trace-rows"></tbody></table></div>
   </section>
@@ -287,12 +295,37 @@ function renderStrip() {
 }
 function renderTabs() {
   const mods = CONFIG.brand.modules;
-  $("modules").innerHTML = mods.map(m => `<button class="tab ${m.id}" id="tab-${m.id}" role="tab" aria-selected="${m.id === "verify"}" aria-controls="panel-${m.id}" type="button"><strong>${esc(m.label)}</strong><span>${esc(m.summary)}</span></button>`).join("");
+  $("modules").innerHTML = mods.map(m => {
+    const id = /^[a-z]+$/.test(m.id) ? m.id : "mod";
+    return `<button class="tab ${id}" id="tab-${id}" role="tab" tabindex="${id === "verify" ? "0" : "-1"}" aria-selected="${id === "verify"}" aria-controls="panel-${id}" type="button"><strong>${esc(m.label)}</strong><span>${esc(m.summary)}</span></button>`;
+  }).join("");
   $("modules").querySelectorAll(".tab").forEach(btn => btn.onclick = () => selectTab(btn.id.replace("tab-", "")));
+  $("modules").onkeydown = (ev) => {
+    if (ev.key !== "ArrowRight" && ev.key !== "ArrowLeft" && ev.key !== "Home" && ev.key !== "End") return;
+    const tabs = [...$("modules").querySelectorAll(".tab")];
+    const i = tabs.findIndex(t => t === document.activeElement);
+    const start = i < 0 ? tabs.findIndex(t => t.getAttribute("aria-selected") === "true") : i;
+    let next = start;
+    if (ev.key === "ArrowRight") next = (start + 1) % tabs.length;
+    if (ev.key === "ArrowLeft") next = (start - 1 + tabs.length) % tabs.length;
+    if (ev.key === "Home") next = 0;
+    if (ev.key === "End") next = tabs.length - 1;
+    ev.preventDefault();
+    tabs.forEach((t, n) => t.tabIndex = n === next ? 0 : -1);
+    tabs[next].focus();
+    selectTab(tabs[next].id.replace("tab-", ""));
+  };
 }
 function selectTab(id) {
-  document.querySelectorAll(".tab").forEach(t => t.setAttribute("aria-selected", t.id === "tab-" + id));
+  document.querySelectorAll(".tab").forEach(t => {
+    const on = t.id === "tab-" + id;
+    t.setAttribute("aria-selected", on);
+    if (document.activeElement !== t) t.tabIndex = on ? 0 : -1;
+  });
   document.querySelectorAll(".panel").forEach(p => p.classList.toggle("hidden", p.id !== "panel-" + id));
+}
+function showError(detail) {
+  $("status").innerHTML = `<span class="err" role="alert">${esc(detail)}</span>`;
 }
 function blankRow() { return { id: "SYS-NEW-010", text: "", parent_id: "", depends_on: [], verification_status: "Not started", evidence: "", method_override: "", reviews: [], external: {} }; }
 function renderEditor() {
@@ -331,9 +364,22 @@ async function check() {
   const r = await fetch("/api/analyze", { method: "POST", headers: {"Content-Type": "application/json"},
     body: JSON.stringify({ profile: SELECTED, source: "editor", requirements: ROWS }) });
   const j = await r.json();
-  if (!r.ok) { $("status").innerHTML = `<span class="err">${esc(j.detail)}</span>`; return; }
+  if (!r.ok) { showError(j.detail); return; }
   adopt(j); $("status").textContent = "Checked with " + j.profile.name + ".";
 }
+$("load-demo").onclick = async () => {
+  $("status").textContent = "Loading demo project…";
+  document.querySelector("main").setAttribute("aria-busy", "true");
+  const r = await fetch("/api/demo");
+  const j = await r.json();
+  document.querySelector("main").removeAttribute("aria-busy");
+  if (!r.ok) { showError(j.detail); return; }
+  SELECTED = j.profile.id;
+  renderProfiles(); renderStrip();
+  adopt(j);
+  selectTab("verify");
+  $("status").textContent = "DemoSat loaded. " + j.summary.requirements + " requirements, profile " + j.profile.name + ".";
+};
 function adopt(j) {
   STATE = j;
   ROWS = j.requirements.map(r => ({...r}));
@@ -355,18 +401,50 @@ function renderAnalyze() {
 function renderTrace() {
   if (!STATE) return;
   const g = STATE.trace.graph;
-  const nodes = g.nodes.slice(0, 24);
+  const nodes = g.nodes.slice(0, 60);
+  const parentOf = {};
+  (g.edges || []).filter(e => e.kind === "parent").forEach(e => { parentOf[e.to] = e.from; });
+  const depth = {};
+  const depthOf = (id, seen) => {
+    if (depth[id] != null) return depth[id];
+    if (!parentOf[id] || seen.has(id)) return depth[id] = 0;
+    seen.add(id);
+    return depth[id] = depthOf(parentOf[id], seen) + 1;
+  };
+  nodes.forEach(n => depthOf(n.id, new Set()));
+  const children = {};
+  nodes.forEach(n => { const p = parentOf[n.id]; if (p) (children[p] = children[p] || []).push(n.id); });
   const pos = {};
-  nodes.forEach((n, i) => { pos[n.id] = { x: 70 + (i % 8) * 90, y: 50 + Math.floor(i / 8) * 80 }; });
-  const lines = g.edges.filter(e => pos[e.from] && pos[e.to]).map(e => {
+  let cursor = 28;
+  const place = (id, depth, seen) => {
+    if (seen.has(id)) return;
+    seen.add(id);
+    const kids = children[id] || [];
+    if (!kids.length) { pos[id] = { x: 16 + depth * 210, y: cursor }; cursor += 26; return; }
+    kids.forEach(k => place(k, depth + 1, seen));
+    const ys = kids.map(k => pos[k].y).filter(y => y != null);
+    pos[id] = { x: 16 + depth * 210, y: ys.length ? (ys[0] + ys[ys.length - 1]) / 2 : cursor };
+    if (!ys.length) cursor += 26;
+  };
+  nodes.filter(n => !parentOf[n.id] || !nodes.some(o => o.id === parentOf[n.id])).forEach(n => place(n.id, depth[n.id] || 0, new Set()));
+  nodes.forEach(n => { if (!pos[n.id]) { pos[n.id] = { x: 16, y: cursor }; cursor += 26; } });
+  const maxY = Math.max(80, cursor);
+  $("graph").setAttribute("viewBox", `0 0 900 ${maxY + 20}`);
+  const lines = (g.edges || []).filter(e => e.kind === "parent" && pos[e.from] && pos[e.to]).map(e => {
     const a = pos[e.from], b = pos[e.to];
-    return `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="${e.kind === "depends" ? "#ffd27a" : "#7ecbff"}" stroke-dasharray="${e.kind === "depends" ? "4 3" : "0"}" stroke-width="1.4"/>`;
+    const mid = a.x + 150;
+    return `<path d="M ${a.x + 118} ${a.y} H ${mid} V ${b.y} H ${b.x}" fill="none" stroke="#7ecbff" stroke-width="1.2" opacity="0.8"/>`;
   }).join("");
-  const dots = nodes.map(n => `<g><circle cx="${pos[n.id].x}" cy="${pos[n.id].y}" r="4" fill="#e8f3fc"/><text x="${pos[n.id].x + 6}" y="${pos[n.id].y - 6}" fill="#a9c6de" font-size="10">${esc(n.id)}</text></g>`).join("");
-  $("graph").innerHTML = lines + dots || `<text x="20" y="40" fill="#a9c6de" font-size="13">No links yet. Set a parent or a dependency in Spec.</text>`;
+  const depends = (g.edges || []).filter(e => e.kind === "depends" && pos[e.from] && pos[e.to]).slice(0, 12).map(e => {
+    const a = pos[e.from], b = pos[e.to];
+    return `<path d="M ${a.x + 118} ${a.y + 4} C ${(a.x + b.x) / 2} ${a.y + 4}, ${(a.x + b.x) / 2} ${b.y}, ${b.x} ${b.y}" fill="none" stroke="#ffd27a" stroke-dasharray="4 3" stroke-width="1.1" opacity="0.7"/>`;
+  }).join("");
+  const dots = nodes.map(n => `<g><circle cx="${pos[n.id].x}" cy="${pos[n.id].y}" r="3.5" fill="#e8f3fc"/><rect x="${pos[n.id].x + 8}" y="${pos[n.id].y - 9}" width="108" height="16" rx="3" fill="#0c1c33"/><text x="${pos[n.id].x + 12}" y="${pos[n.id].y + 3}" fill="#d5e6f5" font-size="11">${esc(n.id)}</text></g>`).join("");
+  $("graph").innerHTML = (lines + depends + dots) || `<text x="20" y="40" fill="#c5d8ea" font-size="13">No links yet. Set a parent or a dependency in Spec.</text>`;
   const by = {};
   (STATE.trace.findings || []).forEach(f => { (by[f.req_id] = by[f.req_id] || []).push(f); });
-  $("trace-rows").innerHTML = STATE.requirements.map(r => `<tr><td>${esc(r.id)}</td><td>${(by[r.id] || []).map(f => `<div><span class="pill ${esc(f.severity)}">${esc(f.rule_id)}</span> ${esc(f.message)}</div>`).join("") || '<span class="muted">Linked or standalone.</span>'}</td></tr>`).join("");
+  const ranked = [...STATE.requirements].sort((a, b) => ((by[b.id] || []).length - (by[a.id] || []).length));
+  $("trace-rows").innerHTML = ranked.map(r => `<tr><td>${esc(r.id)}</td><td>${(by[r.id] || []).map(f => `<div><span class="pill ${esc(f.severity)}">${esc(f.rule_id)}</span> ${esc(f.message)}</div>`).join("") || '<span class="muted">No link findings.</span>'}</td></tr>`).join("");
 }
 function renderVerify() {
   const p = (STATE && STATE.profile) || profile();

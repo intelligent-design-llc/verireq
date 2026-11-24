@@ -1,0 +1,655 @@
+{
+  "profile": "nasa",
+  "source": "DemoSat sample project",
+  "requirements": [
+    {
+      "id": "DS-MIS-010",
+      "text": "The DemoSat spacecraft shall have a launch mass not exceeding 12 kg.",
+      "parent_id": "",
+      "depends_on": [],
+      "verification_status": "Passed",
+      "evidence": "MASS-RPT-01",
+      "method_override": "Inspection",
+      "reviews": [
+        {
+          "reviewer": "Reviewer 1",
+          "review": "SRR",
+          "priority": "High",
+          "disposition": "Accept"
+        },
+        {
+          "reviewer": "Reviewer 2",
+          "review": "SRR",
+          "priority": "High",
+          "disposition": "Accept"
+        }
+      ],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-MIS-020",
+      "text": "The DemoSat spacecraft shall operate for a mission lifetime of 1 year in a 500 km orbit.",
+      "parent_id": "DS-MIS-010",
+      "depends_on": [],
+      "verification_status": "In progress",
+      "evidence": "",
+      "method_override": "Analysis",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-MIS-030",
+      "text": "The DemoSat spacecraft shall re-enter the atmosphere within 5 years after end of mission.",
+      "parent_id": "DS-MIS-010",
+      "depends_on": [
+        "DS-MIS-020"
+      ],
+      "verification_status": "Planned",
+      "evidence": "",
+      "method_override": "Analysis",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-MIS-040",
+      "text": "The DemoSat spacecraft shall have a launch mass not exceeding 12 kg.",
+      "parent_id": "DS-MIS-010",
+      "depends_on": [],
+      "verification_status": "Not started",
+      "evidence": "",
+      "method_override": "",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-MIS-050",
+      "text": "The structure shall not exceed 4 kg.",
+      "parent_id": "DS-MIS-010",
+      "depends_on": [],
+      "verification_status": "Not started",
+      "evidence": "",
+      "method_override": "",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-MIS-060",
+      "text": "The structure shall be at least 6 kg.",
+      "parent_id": "DS-MIS-010",
+      "depends_on": [],
+      "verification_status": "Not started",
+      "evidence": "",
+      "method_override": "",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-MIS-070",
+      "text": "The DemoSat spacecraft should be easy to operate for a student team.",
+      "parent_id": "DS-MIS-010",
+      "depends_on": [],
+      "verification_status": "Not started",
+      "evidence": "",
+      "method_override": "",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-MIS-080",
+      "text": "The DemoSat spacecraft will carry a camera for public outreach.",
+      "parent_id": "DS-MIS-010",
+      "depends_on": [],
+      "verification_status": "Not started",
+      "evidence": "",
+      "method_override": "",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-EPS-010",
+      "text": "The power subsystem shall provide a regulated 28 V bus within 0.5 V during eclipse.",
+      "parent_id": "DS-MIS-010",
+      "depends_on": [],
+      "verification_status": "Passed",
+      "evidence": "EPS-TV-03",
+      "method_override": "Test",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-EPS-020",
+      "text": "The power subsystem shall provide a regulated 28 V bus within 0.5 V in eclipse.",
+      "parent_id": "DS-MIS-010",
+      "depends_on": [
+        "DS-EPS-010"
+      ],
+      "verification_status": "Not started",
+      "evidence": "",
+      "method_override": "",
+      "reviews": [
+        {
+          "reviewer": "Reviewer 1",
+          "review": "SRR",
+          "priority": "Medium",
+          "disposition": "Accept"
+        },
+        {
+          "reviewer": "Reviewer 2",
+          "review": "SRR",
+          "priority": "High",
+          "disposition": "Clarify"
+        }
+      ],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-EPS-030",
+      "text": "The battery shall have a capacity of at least 40 Wh.",
+      "parent_id": "DS-EPS-010",
+      "depends_on": [],
+      "verification_status": "Passed",
+      "evidence": "BAT-COC-2",
+      "method_override": "Inspection",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-EPS-040",
+      "text": "The power subsystem shall switch the spacecraft to safe mode within 2 s when the bus falls below 24 V.",
+      "parent_id": "DS-EPS-010",
+      "depends_on": [],
+      "verification_status": "In progress",
+      "evidence": "",
+      "method_override": "Test",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-EPS-050",
+      "text": "The solar array shall generate at least 8 W orbit-average power at end of life.",
+      "parent_id": "DS-EPS-010",
+      "depends_on": [],
+      "verification_status": "Planned",
+      "evidence": "",
+      "method_override": "Analysis",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-EPS-060",
+      "text": "The power subsystem shall provide adequate power in all modes.",
+      "parent_id": "DS-EPS-010",
+      "depends_on": [],
+      "verification_status": "Not started",
+      "evidence": "",
+      "method_override": "",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-EPS-070",
+      "text": "The power subsystem shall limit the payload current to TBD mA.",
+      "parent_id": "DS-EPS-010",
+      "depends_on": [],
+      "verification_status": "Not started",
+      "evidence": "",
+      "method_override": "",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-EPS-080",
+      "text": "External power connectors shall be labelled with the interface identifier.",
+      "parent_id": "DS-EPS-010",
+      "depends_on": [],
+      "verification_status": "Passed",
+      "evidence": "PHOTO-EPS-4",
+      "method_override": "Inspection",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-COM-010",
+      "text": "The communications subsystem shall transmit health telemetry at 4 kbps.",
+      "parent_id": "DS-MIS-010",
+      "depends_on": [
+        "DS-EPS-010"
+      ],
+      "verification_status": "Passed",
+      "evidence": "RF-TEST-11",
+      "method_override": "Test",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-COM-020",
+      "text": "The radio shall provide a link margin of at least 3 dB at 10 deg elevation.",
+      "parent_id": "DS-COM-010",
+      "depends_on": [],
+      "verification_status": "Planned",
+      "evidence": "",
+      "method_override": "Analysis",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-COM-030",
+      "text": "The spacecraft shall accept telecommands from the ground segment.",
+      "parent_id": "DS-COM-010",
+      "depends_on": [],
+      "verification_status": "Not started",
+      "evidence": "",
+      "method_override": "",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-COM-040",
+      "text": "The space link shall transfer telemetry at 2 Mbps using the coding identified in CCSDS 131.0-B.",
+      "parent_id": "DS-COM-010",
+      "depends_on": [
+        "DS-COM-010"
+      ],
+      "verification_status": "In progress",
+      "evidence": "",
+      "method_override": "Test",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-COM-050",
+      "text": "The transmitter shall not transmit before the ground has sent the enable command.",
+      "parent_id": "DS-COM-010",
+      "depends_on": [],
+      "verification_status": "Not started",
+      "evidence": "",
+      "method_override": "",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-COM-060",
+      "text": "The antenna shall deploy no earlier than 30 min after separation.",
+      "parent_id": "DS-COM-010",
+      "depends_on": [
+        "DS-STR-030"
+      ],
+      "verification_status": "Planned",
+      "evidence": "",
+      "method_override": "Demonstration",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-ADC-010",
+      "text": "The attitude control subsystem shall point the payload boresight to within 1 deg.",
+      "parent_id": "DS-MIS-010",
+      "depends_on": [
+        "DS-EPS-010"
+      ],
+      "verification_status": "In progress",
+      "evidence": "",
+      "method_override": "Test",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-ADC-020",
+      "text": "The attitude control subsystem shall detumble the spacecraft from 10 deg/s to below 1 deg/s within 3 orbits.",
+      "parent_id": "DS-ADC-010",
+      "depends_on": [],
+      "verification_status": "Planned",
+      "evidence": "",
+      "method_override": "Analysis",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-ADC-030",
+      "text": "The attitude control subsystem shall demonstrate a transition to safe mode when the operator sends the command.",
+      "parent_id": "DS-ADC-010",
+      "depends_on": [],
+      "verification_status": "Passed",
+      "evidence": "ADCS-DEMO-2",
+      "method_override": "Demonstration",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-ADC-040",
+      "text": "The attitude control subsystem shall use a Kalman filter for estimation.",
+      "parent_id": "DS-ADC-010",
+      "depends_on": [],
+      "verification_status": "Not started",
+      "evidence": "",
+      "method_override": "",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-ADC-050",
+      "text": "The attitude control subsystem shall provide sufficient pointing stability, TBC.",
+      "parent_id": "DS-ADC-010",
+      "depends_on": [],
+      "verification_status": "Not started",
+      "evidence": "",
+      "method_override": "",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-SW-010",
+      "text": "The flight software shall boot into safe mode within 30 s after power-on.",
+      "parent_id": "DS-MIS-010",
+      "depends_on": [
+        "DS-EPS-040"
+      ],
+      "verification_status": "Passed",
+      "evidence": "SW-BOOT-7",
+      "method_override": "Test",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-SW-020",
+      "text": "The flight software shall reject a command whose CRC does not match and shall log the rejection.",
+      "parent_id": "DS-SW-010",
+      "depends_on": [],
+      "verification_status": "Not started",
+      "evidence": "",
+      "method_override": "",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-SW-030",
+      "text": "The flight software shall be user-friendly and fast.",
+      "parent_id": "DS-SW-010",
+      "depends_on": [],
+      "verification_status": "Not started",
+      "evidence": "",
+      "method_override": "",
+      "reviews": [
+        {
+          "reviewer": "Reviewer 1",
+          "review": "SRR",
+          "priority": "High",
+          "disposition": "Reject"
+        },
+        {
+          "reviewer": "Reviewer 2",
+          "review": "SRR",
+          "priority": "Low",
+          "disposition": "Accept"
+        }
+      ],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-SW-040",
+      "text": "The flight software shall comply with the project software design standard.",
+      "parent_id": "DS-SW-010",
+      "depends_on": [],
+      "verification_status": "In progress",
+      "evidence": "",
+      "method_override": "Analysis",
+      "reviews": [
+        {
+          "reviewer": "Reviewer 1",
+          "review": "SRR",
+          "priority": "Medium",
+          "disposition": "Accept"
+        },
+        {
+          "reviewer": "Reviewer 2",
+          "review": "SRR",
+          "priority": "Medium",
+          "disposition": "Accept"
+        }
+      ],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-SW-050",
+      "text": "The watchdog shall reset the flight computer if it is not serviced within 10 s.",
+      "parent_id": "DS-SW-010",
+      "depends_on": [],
+      "verification_status": "Planned",
+      "evidence": "",
+      "method_override": "Test",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-SW-060",
+      "text": "The on-board software shall never crash under any conditions.",
+      "parent_id": "DS-SW-010",
+      "depends_on": [],
+      "verification_status": "Not started",
+      "evidence": "",
+      "method_override": "",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-THR-010",
+      "text": "The thermal control subsystem shall keep the battery between 0 \u00b0C and 30 \u00b0C in operational modes.",
+      "parent_id": "DS-MIS-010",
+      "depends_on": [],
+      "verification_status": "Passed",
+      "evidence": "THR-PRED-1",
+      "method_override": "Analysis",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-THR-020",
+      "text": "The thermal design shall keep it within limits.",
+      "parent_id": "DS-THR-010",
+      "depends_on": [],
+      "verification_status": "Not started",
+      "evidence": "",
+      "method_override": "",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-THR-030",
+      "text": "The battery heater shall switch on when the cell temperature falls below 5 \u00b0C.",
+      "parent_id": "DS-THR-010",
+      "depends_on": [
+        "DS-EPS-010"
+      ],
+      "verification_status": "Planned",
+      "evidence": "",
+      "method_override": "Test",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-THR-040",
+      "text": "The radiator shall be coated with a measured optical finish.",
+      "parent_id": "DS-THR-010",
+      "depends_on": [],
+      "verification_status": "Passed",
+      "evidence": "COAT-INSP-3",
+      "method_override": "Inspection",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-STR-010",
+      "text": "The structure shall withstand a random vibration of 9.9 grms without structural failure.",
+      "parent_id": "DS-MIS-010",
+      "depends_on": [],
+      "verification_status": "Passed",
+      "evidence": "VIB-QR-8",
+      "method_override": "Test",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-STR-020",
+      "text": "The first natural frequency of the spacecraft shall be above 100 Hz.",
+      "parent_id": "DS-STR-010",
+      "depends_on": [],
+      "verification_status": "Planned",
+      "evidence": "",
+      "method_override": "Analysis",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-STR-030",
+      "text": "The structure shall be provided with a remove-before-flight pin.",
+      "parent_id": "DS-STR-010",
+      "depends_on": [],
+      "verification_status": "Passed",
+      "evidence": "RBF-PHOTO-1",
+      "method_override": "Inspection",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-STR-040",
+      "text": "The spacecraft shall fit a 3U envelope of 100 mm x 100 mm x 340 mm.",
+      "parent_id": "DS-STR-010",
+      "depends_on": [],
+      "verification_status": "Passed",
+      "evidence": "DIM-SHEET-2",
+      "method_override": "Inspection",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-STR-050",
+      "text": "The structure shall be robust and as appropriate for a small satellite.",
+      "parent_id": "DS-STR-010",
+      "depends_on": [],
+      "verification_status": "Not started",
+      "evidence": "",
+      "method_override": "",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-PLD-010",
+      "text": "The payload camera shall acquire images with a ground sampling distance of 30 m from 500 km altitude.",
+      "parent_id": "DS-MIS-010",
+      "depends_on": [
+        "DS-ADC-010",
+        "DS-EPS-010"
+      ],
+      "verification_status": "In progress",
+      "evidence": "",
+      "method_override": "Analysis",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-PLD-020",
+      "text": "The payload shall store at least 2 GB of image data.",
+      "parent_id": "DS-PLD-010",
+      "depends_on": [],
+      "verification_status": "Planned",
+      "evidence": "",
+      "method_override": "Inspection",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-PLD-030",
+      "text": "The payload shall not exceed a power draw of 3 W while imaging.",
+      "parent_id": "DS-PLD-010",
+      "depends_on": [
+        "DS-EPS-010"
+      ],
+      "verification_status": "Not started",
+      "evidence": "",
+      "method_override": "",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-PLD-040",
+      "text": "The payload cover shall demonstrate opening on command.",
+      "parent_id": "DS-PLD-010",
+      "depends_on": [],
+      "verification_status": "Failed",
+      "evidence": "PLD-DEMO-FAIL-1",
+      "method_override": "Demonstration",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-OPS-010",
+      "text": "The ground segment shall deliver a command acknowledgement within 2 s of uplink.",
+      "parent_id": "DS-MIS-010",
+      "depends_on": [
+        "DS-COM-030"
+      ],
+      "verification_status": "Planned",
+      "evidence": "",
+      "method_override": "Test",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-OPS-020",
+      "text": "The operator display shall indicate the safe-mode state.",
+      "parent_id": "DS-OPS-010",
+      "depends_on": [],
+      "verification_status": "In progress",
+      "evidence": "",
+      "method_override": "Demonstration",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-OPS-030",
+      "text": "The operations team shall maintain contact with the spacecraft as far as possible.",
+      "parent_id": "DS-OPS-010",
+      "depends_on": [],
+      "verification_status": "Not started",
+      "evidence": "",
+      "method_override": "",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-OPS-040",
+      "text": "The flight procedure shall be executed as appropriate during the first pass.",
+      "parent_id": "DS-OPS-010",
+      "depends_on": [],
+      "verification_status": "Not started",
+      "evidence": "",
+      "method_override": "",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-OPS-050",
+      "text": "The archive shall retain health telemetry for 2 years.",
+      "parent_id": "DS-OPS-010",
+      "depends_on": [
+        "DS-GONE-099"
+      ],
+      "verification_status": "Planned",
+      "evidence": "",
+      "method_override": "Inspection",
+      "reviews": [],
+      "source": "DemoSat"
+    },
+    {
+      "id": "DS-NOTE-010",
+      "text": "A spare note shall record the paint colour of the test stand.",
+      "parent_id": "",
+      "depends_on": [],
+      "verification_status": "Not started",
+      "evidence": "",
+      "method_override": "",
+      "reviews": [],
+      "source": "DemoSat"
+    }
+  ]
+}

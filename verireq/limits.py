@@ -1,0 +1,14 @@
+"""Shared bounds for uploads and parsed requirement sets."""
+from __future__ import annotations
+
+MAX_UPLOAD_BYTES = 15 * 1024 * 1024
+MAX_ZIP_ENTRIES = 2000
+MAX_ZIP_UNCOMPRESSED = 40 * 1024 * 1024
+MAX_TABLE_ROWS = 5000
+MAX_PDF_PAGES = 80
+MAX_REQUIREMENTS = 2000
+MAX_TEXT_CHARS = 8000
+MAX_ID_CHARS = 80
+MAX_DEPENDS = 30
+MAX_REVIEWS = 8
+MAX_JIRA_BATCH = 200

@@ -10,6 +10,16 @@ import io
 import re
 from typing import List, Optional, Tuple
 
+from .limits import (
+    MAX_PDF_PAGES,
+    MAX_TABLE_ROWS,
+    MAX_ZIP_ENTRIES,
+    MAX_ZIP_UNCOMPRESSED,
+    MAX_DEPENDS,
+    MAX_ID_CHARS,
+    MAX_REVIEWS,
+    MAX_TEXT_CHARS,
+)
 from .models import Requirement
 
 # Requirement IDs: letter prefix, at least one separator and a digit group,
@@ -146,6 +156,8 @@ def _header_index(header: List[str], pred) -> Optional[int]:
 
 
 def requirements_from_table(header: List[str], rows: List[List[str]], source_prefix="row") -> List[Requirement]:
+    if len(rows) > MAX_TABLE_ROWS:
+        raise ExtractionError(f"Table has more than {MAX_TABLE_ROWS} rows.")
     id_col, text_col = _pick_columns(header, rows)
     if text_col is None:
         return []
@@ -189,6 +201,26 @@ def _table_is_requirements(header: List[str]) -> bool:
 # Format readers
 # ---------------------------------------------------------------------------
 
+def guard_office_zip(data: bytes) -> None:
+    """Reject zip-based office files that expand too far or point outside the archive."""
+    import zipfile
+    try:
+        archive = zipfile.ZipFile(io.BytesIO(data))
+    except zipfile.BadZipFile as exc:
+        raise ExtractionError("File is not a valid Office document.") from exc
+    infos = archive.infolist()
+    if len(infos) > MAX_ZIP_ENTRIES:
+        raise ExtractionError("Document contains too many internal files.")
+    total = 0
+    for info in infos:
+        name = info.filename.replace("\\", "/")
+        if name.startswith("/") or ".." in name.split("/"):
+            raise ExtractionError("Document contains an unsafe internal path.")
+        total += max(info.file_size, 0)
+        if total > MAX_ZIP_UNCOMPRESSED:
+            raise ExtractionError("Document expands beyond the size limit.")
+
+
 def from_csv(data: bytes) -> List[Requirement]:
     txt = data.decode("utf-8-sig", errors="replace")
     try:
@@ -196,6 +228,8 @@ def from_csv(data: bytes) -> List[Requirement]:
     except csv.Error:
         dialect = csv.excel
     rows = list(csv.reader(io.StringIO(txt), dialect))
+    if len(rows) > MAX_TABLE_ROWS + 1:
+        raise ExtractionError(f"CSV has more than {MAX_TABLE_ROWS} rows.")
     rows = [r for r in rows if any(c.strip() for c in r)]
     if not rows:
         return []
@@ -204,6 +238,7 @@ def from_csv(data: bytes) -> List[Requirement]:
 
 def from_xlsx(data: bytes) -> List[Requirement]:
     import openpyxl
+    guard_office_zip(data)
     wb = openpyxl.load_workbook(io.BytesIO(data), read_only=True, data_only=True)
     out: List[Requirement] = []
     for ws in wb.worksheets:
@@ -218,6 +253,7 @@ def from_xlsx(data: bytes) -> List[Requirement]:
 
 def from_docx(data: bytes) -> List[Requirement]:
     import docx
+    guard_office_zip(data)
     d = docx.Document(io.BytesIO(data))
     reqs: List[Requirement] = []
     for t_i, table in enumerate(d.tables, 1):
@@ -242,6 +278,8 @@ def from_docx(data: bytes) -> List[Requirement]:
 def from_pdf(data: bytes) -> List[Requirement]:
     from pypdf import PdfReader
     reader = PdfReader(io.BytesIO(data))
+    if len(reader.pages) > MAX_PDF_PAGES:
+        raise ExtractionError(f"PDF has more than {MAX_PDF_PAGES} pages.")
     text = "\n".join((p.extract_text() or "") for p in reader.pages)
     if not text.strip():
         raise ExtractionError("PDF has no text layer (scanned?). OCR is not supported in v0.1.")
@@ -261,28 +299,31 @@ def requirement_from_mapping(row: dict) -> Requirement:
     depends = row.get("depends_on") or []
     if isinstance(depends, str):
         depends = [p.strip() for p in re.split(r"[,;]", depends) if p.strip()]
-    reviews = row.get("reviews") or []
-    external = row.get("external") or {}
+    reviews = row.get("reviews") if isinstance(row.get("reviews"), list) else []
+    external = row.get("external") if isinstance(row.get("external"), dict) else {}
     llm = row.get("llm") if isinstance(row.get("llm"), dict) else None
     status = str(row.get("verification_status") or "Not started").strip() or "Not started"
+    clean_depends = [str(d).strip()[:MAX_ID_CHARS] for d in depends if str(d).strip()][:MAX_DEPENDS]
+    clean_reviews = [r for r in reviews if isinstance(r, dict)][:MAX_REVIEWS]
     return Requirement(
-        id=str(row.get("id") or "").strip() or "AUTO-000",
-        text=_clean(str(row.get("text") or "")),
-        source=str(row.get("source") or ""),
+        id=(str(row.get("id") or "").strip() or "AUTO-000")[:MAX_ID_CHARS],
+        text=_clean(str(row.get("text") or ""))[:MAX_TEXT_CHARS],
+        source=str(row.get("source") or "")[:200],
         id_generated=bool(row.get("id_generated")),
-        parent_id=str(row.get("parent_id") or "").strip(),
-        depends_on=[str(d).strip() for d in depends if str(d).strip()],
-        verification_status=status,
-        method_override=str(row.get("method_override") or "").strip(),
-        evidence=str(row.get("evidence") or "").strip(),
-        reviews=list(reviews) if isinstance(reviews, list) else [],
-        external=dict(external) if isinstance(external, dict) else {},
+        parent_id=str(row.get("parent_id") or "").strip()[:MAX_ID_CHARS],
+        depends_on=clean_depends,
+        verification_status=status[:40],
+        method_override=str(row.get("method_override") or "").strip()[:80],
+        evidence=str(row.get("evidence") or "").strip()[:500],
+        reviews=clean_reviews,
+        external={str(k)[:40]: str(v)[:80] for k, v in list(external.items())[:8]},
         llm=llm,
     )
 
 
 def extract(filename: str, data: bytes) -> List[Requirement]:
-    name = (filename or "").lower()
+    # The name is only an extension hint. It is never used as a filesystem path.
+    name = (filename or "").replace("\\", "/").split("/")[-1].lower()
     if name.endswith(".docx"):
         reqs = from_docx(data)
     elif name.endswith(".pdf"):

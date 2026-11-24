@@ -65,7 +65,7 @@ There is no live Xray subscription in this build, and no claim that a vendor has
 
 ## Quickstart
 
-Requires Python 3.10 or later.
+Requires Python 3.11 or later.
 
 ```bash
 git clone https://github.com/intelligent-design-llc/verireq.git
@@ -81,7 +81,19 @@ python3 -m venv .venv
 .venv/bin/python -m verireq
 ```
 
-Try the synthetic sets in [`samples/`](samples/). `LARK-1_SRS_sample.*` is the original fictional sample. `nasa_requirements.csv`, `dod_requirements.csv`, `ccsds_requirements.csv`, `iso_requirements.csv`, and `ecss_requirements.csv` are new sets written for each profile.
+Open http://127.0.0.1:8000 and choose **Load demo project**. That loads DemoSat, a fictional small-satellite set stored in the app, and opens Verify. A click-by-click script is in [DEMO.md](DEMO.md). No model endpoint and no Jira configuration are required.
+
+![Verify, with the DemoSat closure ring and TAID methods](docs/verify.png)
+
+![Spec, with the imported DemoSat requirements](docs/spec.png)
+
+![Analyze, with profile-aware findings](docs/analyze.png)
+
+![Trace, with the parent tree](docs/trace.png)
+
+![Insight, with hotspots and two-reviewer priorities](docs/insight.png)
+
+Other synthetic sets live in [`samples/`](samples/).
 
 ### Docker
 
