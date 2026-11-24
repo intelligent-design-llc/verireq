@@ -34,6 +34,6 @@ python3 -m venv .venv
 - Update the rule catalogue in `README.md`.
 
 ## Pull requests
-- Keep PRs focused. Make sure `pytest` passes; CI runs it on Python 3.10–3.13.
+- Keep PRs focused. Make sure `pytest` passes; CI runs it on Python 3.11–3.13.
 - By contributing, you agree that your contribution is licensed under the Apache License 2.0 (see `LICENSE`, section 5).
 - Sign-off is optional; the commit author name you use will be public.

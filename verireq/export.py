@@ -45,6 +45,17 @@ def _sheet(wb, title, headers, widths):
     return ws
 
 
+def _excel(value):
+    """Stop a cell that starts with a formula marker from being executed by a spreadsheet."""
+    if isinstance(value, str) and value[:1] in {"=", "+", "-", "@"}:
+        return "'" + value
+    return value
+
+
+def _append(ws, values):
+    ws.append([_excel(v) for v in values])
+
+
 def _finish(ws):
     for row in ws.iter_rows(min_row=2):
         for c in row:
@@ -63,9 +74,9 @@ def to_xlsx(result: dict) -> bytes:
     s.title = "Summary"
     s.column_dimensions["A"].width = 36
     s.column_dimensions["B"].width = 96
-    s.append([f"{PRODUCT_NAME} — verification, quality, and closure draft"])
+    _append(s, [f"{PRODUCT_NAME} — verification, quality, and closure draft"])
     s["A1"].font = Font(bold=True, size=14, color="0C2340")
-    s.append(["DISCLAIMER", result.get("disclaimer", "")])
+    _append(s, ["DISCLAIMER", result.get("disclaimer", "")])
     s["A2"].font = Font(bold=True, color="9C0006")
     s["B2"].fill = WARN_FILL
     s["B2"].alignment = WRAP
@@ -222,6 +233,11 @@ def to_xlsx(result: dict) -> bytes:
 
     # text_by_id kept for callers that expect the findings sheet to be self-contained
     _ = text_by_id
+    for ws in wb.worksheets:
+        for row in ws.iter_rows():
+            for cell in row:
+                if isinstance(cell.value, str) and cell.value[:1] in {"=", "+", "-", "@"}:
+                    cell.value = "'" + cell.value
     buf = io.BytesIO()
     wb.save(buf)
     return buf.getvalue()

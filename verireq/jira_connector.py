@@ -17,7 +17,10 @@ from urllib.parse import urlsplit, urlunsplit
 import httpx
 
 from .brand import PRODUCT_NAME
+from .limits import MAX_JIRA_BATCH
 from .models import Requirement
+
+_KEY_RE = re.compile(r"^[A-Z][A-Z0-9]+-\d+$")
 
 
 class JiraError(RuntimeError):
@@ -68,7 +71,13 @@ def _raw() -> dict:
     issue_type = os.environ.get("JIRA_ISSUE_TYPE", "Task").strip() or "Task"
     if not (base and token and project):
         raise JiraError("Jira connector is not configured. Set JIRA_BASE_URL, JIRA_API_TOKEN, and JIRA_PROJECT_KEY.")
-    return {"base": base, "token": token, "email": email, "project": project, "issue_type": issue_type}
+    parts = urlsplit(base)
+    if parts.scheme not in {"http", "https"} or not parts.hostname or parts.username or parts.password:
+        raise JiraError("JIRA_BASE_URL must be an http(s) origin without embedded credentials.")
+    if not re.fullmatch(r"[A-Z][A-Z0-9]+", project):
+        raise JiraError("JIRA_PROJECT_KEY is not a project key.")
+    origin = _public_base(base)
+    return {"base": origin, "token": token, "email": email, "project": project, "issue_type": issue_type[:40]}
 
 
 def _label(req_id: str) -> str:
@@ -83,6 +92,8 @@ def _adf(text: str) -> dict:
 
 
 def push_requirements(reqs: List[Requirement], client: Optional[httpx.Client] = None) -> List[dict]:
+    if len(reqs) > MAX_JIRA_BATCH:
+        raise JiraError(f"Refusing to push more than {MAX_JIRA_BATCH} requirements at once.")
     raw = _raw()
     own = client is None
     client = client or httpx.Client(**_client_kwargs(raw))
@@ -124,10 +135,14 @@ def pull_statuses(issue_keys: List[str], client: Optional[httpx.Client] = None) 
     client = client or httpx.Client(**_client_kwargs(raw))
     out = []
     try:
+        if len(issue_keys) > MAX_JIRA_BATCH:
+            raise JiraError(f"Refusing to pull more than {MAX_JIRA_BATCH} issue keys at once.")
         for key in issue_keys:
-            key = (key or "").strip()
+            key = (key or "").strip().upper()
             if not key:
                 continue
+            if not _KEY_RE.fullmatch(key):
+                raise JiraError("An issue key is not in PROJECT-NUMBER form.")
             response = client.get(f"{raw['base']}/rest/api/3/issue/{key}", params={"fields": "status,summary"})
             if response.status_code >= 400:
                 raise JiraError(f"Jira could not read {key} ({response.status_code}).")

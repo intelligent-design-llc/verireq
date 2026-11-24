@@ -13,11 +13,11 @@ from __future__ import annotations
 
 import json
 import re
-import xml.etree.ElementTree as ET
 from typing import List
 from xml.sax.saxutils import escape
 
 from .brand import PRODUCT_NAME
+from .safe_xml import parse_xml
 from .models import Requirement
 
 _STATUS_TO_XRAY = {
@@ -151,10 +151,7 @@ def import_results(payload: str, filename: str = "") -> List[dict]:
 
 
 def _from_junit(text: str) -> List[dict]:
-    try:
-        root = ET.fromstring(text)
-    except ET.ParseError as exc:
-        raise ValueError(f"JUnit XML is not well-formed: {exc}") from exc
+    root = parse_xml(text.encode("utf-8"))
     updates = []
     for case in root.iter("testcase"):
         props = {}

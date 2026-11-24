@@ -15,6 +15,8 @@ from datetime import datetime, timezone
 from typing import List
 from xml.etree import ElementTree as ET
 
+from .safe_xml import parse_xml
+
 from .brand import PRODUCT_NAME
 from .models import Requirement
 
@@ -43,10 +45,7 @@ def _q(tag: str) -> str:
 
 
 def loads(data: bytes) -> List[Requirement]:
-    try:
-        root = ET.fromstring(data)
-    except ET.ParseError as exc:
-        raise ValueError(f"ReqIF is not well-formed XML: {exc}") from exc
+    root = parse_xml(data)
     attr_names = {}
     rel_types = {}
     for el in root.iter():

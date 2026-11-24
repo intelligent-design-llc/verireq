@@ -10,8 +10,10 @@ import json
 from pathlib import Path
 from typing import Optional
 
+import re
+
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import FileResponse, HTMLResponse, Response
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Response
 
 from . import __version__
 from . import llm
@@ -19,6 +21,7 @@ from .brand import IMAGE_NAME, PRODUCT_NAME, public_brand
 from .core import analyse, requirements_from_mappings
 from .export import to_xlsx
 from .extract import ExtractionError, extract, requirement_from_mapping, requirements_from_text
+from .limits import MAX_JIRA_BATCH, MAX_REQUIREMENTS, MAX_UPLOAD_BYTES
 from .jira_connector import JiraError, config as jira_config, pull_statuses, push_requirements
 from .library import suggest
 from .models import Requirement
@@ -27,9 +30,19 @@ from .reqif import dumps as reqif_dumps
 from .xray_connector import export_execution, export_junit, import_results
 
 STATIC = Path(__file__).parent / "static"
-MAX_BYTES = 15 * 1024 * 1024
+DEMO_PATH = Path(__file__).parent / "data" / "demosat.json"
+MAX_BYTES = MAX_UPLOAD_BYTES
+_NAME_RE = re.compile(r"[^A-Za-z0-9._-]+")
 
 app = FastAPI(title=f"{PRODUCT_NAME}", version=__version__)
+
+
+@app.middleware("http")
+async def limit_request_body(request: Request, call_next):
+    body = await request.body()
+    if len(body) > MAX_BYTES:
+        return JSONResponse({"detail": "Request too large (15 MB max)."}, status_code=413)
+    return await call_next(request)
 
 _TOKENS = None
 
@@ -85,6 +98,21 @@ def list_profiles():
     return {"default": reg.default.id, "profiles": reg.public_list()}
 
 
+def _download_name(name: str) -> str:
+    cleaned = _NAME_RE.sub("-", name).strip(".-")
+    return cleaned or "download"
+
+
+@app.get("/api/demo")
+def demo_project():
+    """Analysed fictional DemoSat set. No network call; the file ships with the package."""
+    payload = json.loads(DEMO_PATH.read_text(encoding="utf-8"))
+    reqs = requirements_from_mappings(payload["requirements"])
+    if len(reqs) > MAX_REQUIREMENTS:
+        raise HTTPException(422, "Demo set is larger than the analyser accepts.")
+    return analyse(reqs, payload.get("source") or "DemoSat", payload.get("profile") or None)
+
+
 @app.get("/api/library")
 def library(q: str = ""):
     return {"suggestions": suggest(q)}
@@ -125,7 +153,7 @@ async def llm_refine(result: dict):
 async def export(result: dict):
     data = to_xlsx(result)
     profile = ((result.get("profile") or {}).get("id")) or "report"
-    name = f"{IMAGE_NAME}-{profile}-report.xlsx"
+    name = _download_name(f"{IMAGE_NAME}-{profile}-report.xlsx")
     return Response(data, media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     headers={"Content-Disposition": f'attachment; filename="{name}"'})
 
@@ -135,7 +163,7 @@ async def export_reqif(result: dict):
     reqs = [requirement_from_mapping(r) for r in result.get("requirements") or []]
     profile = (result.get("profile") or {}).get("name") or PRODUCT_NAME
     data = reqif_dumps(reqs, title=f"{PRODUCT_NAME} — {profile}")
-    name = f"{IMAGE_NAME}-requirements.reqif"
+    name = _download_name(f"{IMAGE_NAME}-requirements.reqif")
     return Response(data, media_type="application/xml",
                     headers={"Content-Disposition": f'attachment; filename="{name}"'})
 
@@ -146,7 +174,7 @@ async def xray_export(result: dict):
     methods = {r["id"]: (r.get("verification") or {}).get("primary") for r in result.get("requirements") or []}
     project = jira_config()["project"]
     document = export_execution(reqs, project_key=project, method_for=lambda req: methods.get(req.id))
-    name = f"{IMAGE_NAME}-xray.json"
+    name = _download_name(f"{IMAGE_NAME}-xray.json")
     body = json.dumps(document, indent=2).encode("utf-8")
     return Response(body, media_type="application/json",
                     headers={"Content-Disposition": f'attachment; filename="{name}"'})
@@ -157,7 +185,7 @@ async def xray_export_junit(result: dict):
     reqs = [requirement_from_mapping(r) for r in result.get("requirements") or []]
     methods = {r["id"]: (r.get("verification") or {}).get("primary") for r in result.get("requirements") or []}
     xml = export_junit(reqs, method_for=lambda req: methods.get(req.id))
-    name = f"{IMAGE_NAME}-xray-junit.xml"
+    name = _download_name(f"{IMAGE_NAME}-xray-junit.xml")
     return Response(xml.encode("utf-8"), media_type="application/xml",
                     headers={"Content-Disposition": f'attachment; filename="{name}"'})
 
@@ -209,6 +237,8 @@ async def jira_pull(payload: dict):
     keys = [str(k).strip() for k in (payload.get("keys") or []) if str(k).strip()]
     if not keys:
         raise HTTPException(400, "Provide Jira issue keys to pull.")
+    if len(keys) > MAX_JIRA_BATCH:
+        raise HTTPException(400, f"Refusing to pull more than {MAX_JIRA_BATCH} issue keys at once.")
     try:
         return {"issues": pull_statuses(keys)}
     except JiraError as exc:
@@ -229,7 +259,12 @@ async def _read_requirements(request: Request):
         body = await request.json()
         profile_id = body.get("profile") or profile_id
         if body.get("requirements"):
-            return requirements_from_mappings(body["requirements"]), body.get("source") or "editor", profile_id
+            rows = body["requirements"]
+            if not isinstance(rows, list):
+                raise HTTPException(400, "requirements must be a list.")
+            if len(rows) > MAX_REQUIREMENTS:
+                raise HTTPException(413, f"More than {MAX_REQUIREMENTS} requirements.")
+            return requirements_from_mappings(rows), str(body.get("source") or "editor")[:200], profile_id
         text = str(body.get("text") or "")
         if not text.strip():
             raise HTTPException(400, "Upload a file or paste requirement text.")
