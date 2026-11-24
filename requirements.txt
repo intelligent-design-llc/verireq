@@ -1,5 +1,7 @@
 # Pinned to versions audited with pip-audit on a clean install (no known CVEs).
 # FastAPI and Starlette at these versions require Python 3.11 or newer.
+# setuptools is pinned because a runner image can ship an older copy with published advisories.
+setuptools==84.2.1
 fastapi==0.165.0
 uvicorn==0.54.0
 python-multipart==0.0.34
