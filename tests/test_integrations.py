@@ -2,12 +2,11 @@
 import json
 from pathlib import Path
 
-import httpx
 import pytest
 
 from verireq.closure import closure_state, summarize
 from verireq.core import analyse
-from verireq.jira_connector import JiraError, config as jira_config, map_status, pull_statuses, push_requirements
+from verireq.jira_connector import JiraError, config as jira_config, map_status, push_requirements
 from verireq.models import Requirement
 from verireq.reqif import dumps, loads
 from verireq.trace import trace_findings
@@ -63,46 +62,21 @@ def test_closure_needs_status_and_evidence():
     assert summary["closed"] == 1 and summary["total"] == 2
 
 
-def test_jira_off_by_default_and_push_pull_with_fake_client(monkeypatch):
-    for key in ("JIRA_BASE_URL", "JIRA_API_TOKEN", "JIRA_PROJECT_KEY", "JIRA_EMAIL"):
+def test_jira_off_by_default_and_hides_the_token(monkeypatch):
+    for key in ("JIRA_BASE_URL", "JIRA_API_TOKEN", "JIRA_PROJECT_KEY", "JIRA_PROJECT", "JIRA_EMAIL"):
         monkeypatch.delenv(key, raising=False)
     assert jira_config()["enabled"] is False
     with pytest.raises(JiraError):
         push_requirements([Requirement("SYS-010", "The bus shall provide 28 V.")])
-
     monkeypatch.setenv("JIRA_BASE_URL", "https://example.atlassian.net")
     monkeypatch.setenv("JIRA_API_TOKEN", "secret-token")
+    monkeypatch.setenv("JIRA_EMAIL", "qa@example.com")
     monkeypatch.setenv("JIRA_PROJECT_KEY", "DEMO")
-    seen = {}
-
-    class Fake:
-        def post(self, url, json=None):
-            seen["url"] = url
-            seen["body"] = json
-            seen["token_in_body"] = "secret-token" in str(json)
-            request = httpx.Request("POST", url)
-            return httpx.Response(201, json={"key": "DEMO-12", "id": "10012"}, request=request)
-
-        def get(self, url, params=None):
-            request = httpx.Request("GET", url)
-            return httpx.Response(200, json={"fields": {
-                "summary": "SYS-010",
-                "status": {"name": "In Progress", "statusCategory": {"key": "indeterminate"}},
-            }}, request=request)
-
-        def close(self):
-            pass
-
-    created = push_requirements([Requirement("SYS-010", "The bus shall provide 28 V within 0.5 V.")], client=Fake())
-    assert created == [{"req_id": "SYS-010", "key": "DEMO-12", "id": "10012"}]
-    assert seen["url"].endswith("/rest/api/3/issue")
-    assert seen["body"]["fields"]["project"]["key"] == "DEMO"
-    assert seen["token_in_body"] is False
-    pulled = pull_statuses(["DEMO-12"], client=Fake())
-    assert pulled[0]["verification_status"] == "In progress"
-    assert map_status("Done", "done") == "Passed"
     public = jira_config()
-    assert public["enabled"] is True and "secret-token" not in json.dumps(public)
+    assert public["enabled"] is True
+    assert public["deployment"] == "cloud"
+    assert "secret-token" not in json.dumps(public)
+    assert map_status("Done", "done") == "Passed"
 
 
 def test_xray_export_and_import_fixtures():

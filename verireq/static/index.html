@@ -230,10 +230,12 @@
         <button class="ghost" id="xray" type="button" disabled>Export Xray JSON</button>
         <button class="ghost" id="junit" type="button" disabled>Export Xray JUnit</button>
         <label class="ghost" style="display:inline-block">Import Xray results<input id="xray-in" type="file" accept=".json,.xml" hidden></label>
+        <button class="ghost" id="jira-test" type="button" disabled>Test Jira connection</button>
         <button class="ghost" id="jira-push" type="button" disabled>Push to Jira</button>
         <button class="ghost" id="jira-pull" type="button" disabled>Pull Jira status</button>
       </div>
       <p class="muted" id="integration-note"></p>
+      <p class="muted" id="integration-planned"></p>
     </div>
     <div class="card wrap">
       <table>
@@ -273,8 +275,12 @@ async function boot() {
   $("llmnote").textContent = cfg.llm.enabled
     ? " Model pass is configured and stays idle until you ask for it."
     : " Model pass is off.";
-  const jira = cfg.jira.enabled ? `Jira connector is on for project ${cfg.jira.project}.` : "Jira connector is off.";
+  const jira = cfg.jira.enabled
+    ? `Jira connector is on for project ${cfg.jira.project} (${cfg.jira.deployment}).`
+    : "Jira connector is off.";
   $("integration-note").textContent = jira + " Xray and ReqIF are files on this machine. No vendor account is required for them.";
+  $("integration-planned").textContent = "Planned, not in this build: a direct DOORS and DOORS Next connector, and MBSE links for Cameo, Capella, and the SysML v2 API. Those names belong to their owners. This build reaches them only if you exchange a ReqIF file yourself.";
+  $("jira-test").disabled = !cfg.jira.enabled;
   $("llm").disabled = !cfg.llm.enabled;
   $("llm").textContent = cfg.llm.enabled ? "Model rewrite" : "Model rewrite (off)";
   renderProfiles(); renderTabs(); renderStrip(); renderVerify();
@@ -554,6 +560,13 @@ $("xray-in").onchange = async () => {
   (j.updates || []).forEach(u => { if (by[u.req_id]) { by[u.req_id].verification_status = u.verification_status; if (u.evidence) by[u.req_id].evidence = u.evidence; } });
   check();
   $("status").textContent = "Applied " + (j.updates || []).length + " Xray result(s).";
+};
+$("jira-test").onclick = async () => {
+  $("status").textContent = "Testing Jira connection…";
+  const r = await fetch("/api/jira/test", { method: "POST" });
+  const j = await r.json();
+  if (!r.ok) { showError(j.detail); return; }
+  $("status").textContent = "Jira connection ok for " + j.project + " (" + j.deployment + ").";
 };
 $("jira-push").onclick = async () => {
   const r = await fetch("/api/jira/push", { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(STATE) });

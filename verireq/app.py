@@ -22,7 +22,7 @@ from .core import analyse, requirements_from_mappings
 from .export import to_xlsx
 from .extract import ExtractionError, extract, requirement_from_mapping, requirements_from_text
 from .limits import MAX_JIRA_BATCH, MAX_REQUIREMENTS, MAX_UPLOAD_BYTES
-from .jira_connector import JiraError, config as jira_config, pull_statuses, push_requirements
+from .jira_connector import JiraError, config as jira_config, pull_statuses, push_requirements, test_connection
 from .library import suggest
 from .models import Requirement
 from .profiles import ProfileError, get_registry, resolve_profile
@@ -214,6 +214,16 @@ async def xray_import(request: Request):
     if not text.strip():
         raise HTTPException(400, "Upload an Xray JSON execution file or a JUnit XML file.")
     return {"updates": _parse_xray(text, filename)}
+
+
+@app.post("/api/jira/test")
+def jira_test():
+    if not jira_config()["enabled"]:
+        raise HTTPException(400, "Jira connector is off. Set JIRA_BASE_URL, JIRA_API_TOKEN, and JIRA_PROJECT_KEY.")
+    try:
+        return test_connection()
+    except JiraError as exc:
+        raise HTTPException(502, str(exc)) from exc
 
 
 @app.post("/api/jira/push")
