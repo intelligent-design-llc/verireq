@@ -58,10 +58,14 @@ These are interchange paths, not certified connections. **Jira, Xray, IBM DOORS,
 | Path | How it works | Default |
 |---|---|---|
 | ReqIF 1.1 | Import and export a requirements file with parent and depends-on relations. This is the interchange format tools such as DOORS, DOORS Next, and Polarion can exchange. | Local file. No account. |
-| Jira | REST API v3. Push requirements as issues and pull status back. Base URL, API token, and project key come from the environment. | **Off** until `JIRA_BASE_URL`, `JIRA_API_TOKEN`, and `JIRA_PROJECT_KEY` are set. |
+| Jira | Cloud (REST v3, email and API token) or Server/Data Center (REST v2, bearer token). Push creates or updates issues and can link parent and depends-on. Pull reads status in batches. | **Off** until `JIRA_BASE_URL`, `JIRA_API_TOKEN`, and `JIRA_PROJECT_KEY` are set. See [docs/jira-setup.md](docs/jira-setup.md). |
 | Xray | Export a JSON execution document (Manual `testInfo`, Cloud status names) and a JUnit file using the property names in Xray's JUnit extension (`test_key`, `requirements`). Import either shape, or the Server/DC status names `PASS` / `FAIL`, to update verification status. | Local file. No Xray account and no network call. |
 
-There is no live Xray subscription in this build, and no claim that a vendor has certified the mapping.
+There is no live Xray subscription in this build, and no claim that a vendor has certified any mapping.
+
+### Planned, not shipped
+
+A direct IBM DOORS / DOORS Next connector and MBSE links (Dassault Cameo / MagicDraw, Eclipse Capella, and a generic SysML v2 API) are roadmap items only. This build does not talk to those products. The ReqIF file is the interchange path you can use with them today. See [ROADMAP.md](ROADMAP.md). Cameo, MagicDraw, Capella, DOORS, and SysML names belong to their owners.
 
 ## Quickstart
 
@@ -169,7 +173,7 @@ samples/        synthetic requirement sets
 
 - Heuristic and English-only. Expect false positives and missed contradictions.
 - PDFs need a text layer. ReqIF covers the interchange subset this tool writes and reads, not every vendor extension.
-- Jira push uses issue type `Task` unless `JIRA_ISSUE_TYPE` is set. Status pull maps common Jira status names; it is not a workflow sync.
+- Jira prefers the issue type `Requirement`, then Story, then Task, unless `JIRA_ISSUE_TYPE` names a type the project actually has. Status pull maps common Jira status names; it is not a workflow sync. See [docs/jira-setup.md](docs/jira-setup.md).
 - Xray `requirementKeys` in the export are requirement ids from this tool until you link them to Jira issue keys.
 - No accounts, no persistence on the server. The browser holds the working set.
 - Profiles are not a certification of compliance to the named standard.

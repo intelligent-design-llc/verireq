@@ -13,6 +13,13 @@ The running name is [`verireq/brand.py`](verireq/brand.py). Repository: [github.
 - Xray JSON and JUnit file exchange, with no Xray account
 - Local rule engine that runs with the model pass and Jira connector both off
 
+## Planned integrations
+
+These are not in the current build. The names belong to their owners. VeriReq is not affiliated with them and does not claim a certified connection.
+
+- **IBM DOORS and DOORS Next.** A direct connector, separate from the ReqIF file exchange that ships today. DOORS Next would use OSLC Requirements Management. Classic DOORS would use a DXL or ReqIF path, because that client does not speak OSLC the same way.
+- **MBSE links.** Dassault Cameo and MagicDraw would be reached through SysML v1 today and the SysML v2 API where a model exposes it. Eclipse Capella would be reached through its requirements viewpoint or a ReqIF bridge. A generic SysML v2 API client would cover other tools that implement that API.
+
 ## v0.3: compliance matrix
 
 - Draft a compliance matrix (C / PC / NC / N/A plus justification) against a chosen standard

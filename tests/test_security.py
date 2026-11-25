@@ -120,6 +120,9 @@ def test_jira_rejects_credentialed_urls_and_odd_keys(monkeypatch):
     monkeypatch.setenv("JIRA_BASE_URL", "file:///etc/passwd")
     with pytest.raises(JiraError):
         pull_statuses(["DEMO-1"], client=object())
+    monkeypatch.setenv("JIRA_BASE_URL", "http://jira.example.com")
+    with pytest.raises(JiraError, match="https"):
+        pull_statuses(["DEMO-1"], client=object())
     monkeypatch.setenv("JIRA_BASE_URL", "https://example.invalid")
 
     class Fake:
